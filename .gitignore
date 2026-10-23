@@ -1,11 +1,10 @@
-# Configuración de Entorno y Credenciales
+# Configuración de Entorno
 .env
 .gemini/
 .agent/
 
 # Dependencias
 node_modules/
-vendor/
 
 # Archivos de Sistema / IDE
 .vscode/
@@ -13,12 +12,3 @@ vendor/
 .DS_Store
 .ftpquota
 Thumbs.db
-
-# Logs del servidor
-*.log
-error_log
-
-# Backups y temporales
-*.zip
-*.bak
-*.tmp

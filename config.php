@@ -1,20 +1,13 @@
 <?php
 // config.php - Configuración de base de datos
-// Las credenciales se cargan desde el .env del servidor (nunca en el repo)
+date_default_timezone_set('America/Managua');
 
 class Database {
-    private $host;
-    private $db_name;
-    private $username;
-    private $password;
+    private $host = "localhost";
+    private $db_name = "u839374897_erp";
+    private $username = "u839374897_erp";
+    private $password = "ERpPitHay2025$";
     public $conn;
-
-    public function __construct() {
-        $this->host     = $_ENV['DB_HOST'] ?? 'localhost';
-        $this->db_name  = $_ENV['DB_NAME'] ?? '';
-        $this->username = $_ENV['DB_USER'] ?? '';
-        $this->password = $_ENV['DB_PASS'] ?? '';
-    }
 
     public function getConnection() {
         $this->conn = null;
@@ -26,10 +19,11 @@ class Database {
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
             );
 
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+            $this->conn->exec("SET time_zone = '-06:00'");
 
         } catch(PDOException $exception) {
             error_log("Error de conexión PDO: " . $exception->getMessage());

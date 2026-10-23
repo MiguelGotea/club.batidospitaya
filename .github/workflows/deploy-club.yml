@@ -48,7 +48,6 @@ jobs:
           --exclude='.github/' \
           --exclude='.gitignore' \
           --exclude='.scripts/' \
-          --exclude='.env' \
           -e "ssh -o StrictHostKeyChecking=no -p 65002" \
           ./ \
           ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH_CLUB }}/
