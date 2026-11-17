@@ -74,60 +74,80 @@ PROMPT;
 
 $userPrompt = "Analiza esta cédula de identidad nicaragüense y extrae los datos solicitados en formato JSON.";
 
-// ── Llamar a Gemini Vision ─────────────────────────────────────────────────────
-try {
-    $ai = new AIService($conn, 'google');
-    $ai->setModel('gemini-2.0-flash');
-
-    $extraParts = [
-        [
-            'inline_data' => [
-                'mime_type' => $mime,
-                'data'      => $imagenB64
-            ]
+// ── Llamar a IA con fallback automático (google → openai → groq) ──────────────
+$extraParts = [
+    [
+        'inline_data' => [
+            'mime_type' => $mime,
+            'data'      => $imagenB64
         ]
-    ];
+    ]
+];
 
-    $respuesta = $ai->procesarPrompt($systemPrompt, $userPrompt, 0.1, $extraParts);
-    $respuesta = preg_replace('/^```(?:json)?\s*/i', '', trim($respuesta));
-    $respuesta = preg_replace('/\s*```$/', '', $respuesta);
+// Proveedores con soporte Vision, en orden de preferencia
+$proveedores = [
+    'google' => 'gemini-2.0-flash',
+    'openai' => 'gpt-4o-mini',
+    'groq'   => 'llama-3.2-90b-vision-preview',
+];
 
-    $datos = json_decode($respuesta, true);
+$respuesta    = null;
+$errores      = [];
 
-    if (json_last_error() !== JSON_ERROR_NONE || !is_array($datos)) {
-        echo json_encode(['success' => false, 'mensaje' => 'No se pudo interpretar la respuesta de IA.']);
-        exit;
+foreach ($proveedores as $prov => $modelo) {
+    try {
+        $ai = new AIService($conn, $prov);
+        $ai->setModel($modelo);
+
+        $respuesta = $ai->procesarPrompt($systemPrompt, $userPrompt, 0.1, $extraParts);
+        if ($respuesta) break; // Éxito — salir del loop
+    } catch (Exception $e) {
+        $errores[] = strtoupper($prov) . ': ' . $e->getMessage();
+        error_log('analizar_cedula [' . $prov . '] ERROR: ' . $e->getMessage());
+        continue; // Intentar siguiente proveedor
     }
-
-    if (isset($datos['error'])) {
-        echo json_encode(['success' => false, 'mensaje' => $datos['error']]);
-        exit;
-    }
-
-    // Normalizar fecha: si viene como DD/MM/YYYY o similares, convertir a YYYY-MM-DD
-    if (!empty($datos['fecha_nacimiento']) && $datos['fecha_nacimiento'] !== null) {
-        $fec = $datos['fecha_nacimiento'];
-        // Intentar parsear si no es formato ISO
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fec)) {
-            $ts = strtotime($fec);
-            if ($ts !== false) {
-                $fec = date('Y-m-d', $ts);
-            }
-        }
-        $datos['fecha_nacimiento'] = $fec;
-    }
-
-    echo json_encode([
-        'success' => true,
-        'datos'   => [
-            'nombre'           => isset($datos['nombre'])           ? strtoupper(trim($datos['nombre']))    : null,
-            'apellido'         => isset($datos['apellido'])         ? strtoupper(trim($datos['apellido']))  : null,
-            'cedula'           => isset($datos['cedula'])           ? trim($datos['cedula'])                 : null,
-            'fecha_nacimiento' => isset($datos['fecha_nacimiento']) ? $datos['fecha_nacimiento']             : null,
-        ]
-    ]);
-
-} catch (Exception $e) {
-    error_log('analizar_cedula ERROR: ' . $e->getMessage());
-    echo json_encode(['success' => false, 'mensaje' => 'Error al analizar la imagen. Intenta nuevamente.']);
 }
+
+if (!$respuesta) {
+    error_log('analizar_cedula — todos los proveedores fallaron: ' . implode(' | ', $errores));
+    echo json_encode(['success' => false, 'mensaje' => 'Error al analizar la imagen. Intenta nuevamente.']);
+    exit;
+}
+
+// Limpiar markdown si la IA lo devuelve entre ```json ... ```
+$respuesta = preg_replace('/^```(?:json)?\s*/i', '', trim($respuesta));
+$respuesta = preg_replace('/\s*```$/', '', $respuesta);
+
+$datos = json_decode($respuesta, true);
+
+if (json_last_error() !== JSON_ERROR_NONE || !is_array($datos)) {
+    echo json_encode(['success' => false, 'mensaje' => 'No se pudo interpretar la respuesta de IA.']);
+    exit;
+}
+
+if (isset($datos['error'])) {
+    echo json_encode(['success' => false, 'mensaje' => $datos['error']]);
+    exit;
+}
+
+// Normalizar fecha: si viene como DD/MM/YYYY o similares, convertir a YYYY-MM-DD
+if (!empty($datos['fecha_nacimiento']) && $datos['fecha_nacimiento'] !== null) {
+    $fec = $datos['fecha_nacimiento'];
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fec)) {
+        $ts = strtotime($fec);
+        if ($ts !== false) {
+            $fec = date('Y-m-d', $ts);
+        }
+    }
+    $datos['fecha_nacimiento'] = $fec;
+}
+
+echo json_encode([
+    'success' => true,
+    'datos'   => [
+        'nombre'           => isset($datos['nombre'])           ? strtoupper(trim($datos['nombre']))    : null,
+        'apellido'         => isset($datos['apellido'])         ? strtoupper(trim($datos['apellido']))  : null,
+        'cedula'           => isset($datos['cedula'])           ? trim($datos['cedula'])                 : null,
+        'fecha_nacimiento' => isset($datos['fecha_nacimiento']) ? $datos['fecha_nacimiento']             : null,
+    ]
+]);
