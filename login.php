@@ -86,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
                         $redirect = $_SESSION['redirect_after_login'] ?? 'dashboard.php';
                         unset($_SESSION['redirect_after_login']);
+                        session_write_close(); // LiteSpeed: forzar escritura antes de redirigir
                         header('Location: ' . $redirect);
                         exit();
 
@@ -149,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         $_SESSION['last_regeneration'] = time();
                         $_SESSION['primer_ingreso']    = true; // para mostrar bienvenida especial
 
+                        session_write_close(); // LiteSpeed: forzar escritura antes de redirigir
                         header('Location: dashboard.php');
                         exit();
 
