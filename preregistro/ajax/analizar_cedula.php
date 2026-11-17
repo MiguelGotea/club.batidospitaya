@@ -89,8 +89,6 @@ try {
     ];
 
     $respuesta = $ai->procesarPrompt($systemPrompt, $userPrompt, 0.1, $extraParts);
-
-    // Limpiar markdown si Gemini lo devuelve entre ```json ... ```
     $respuesta = preg_replace('/^```(?:json)?\s*/i', '', trim($respuesta));
     $respuesta = preg_replace('/\s*```$/', '', $respuesta);
 
