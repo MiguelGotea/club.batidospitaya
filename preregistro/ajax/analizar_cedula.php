@@ -109,8 +109,8 @@ foreach ($proveedores as $prov => $modelo) {
 }
 
 if (!$respuesta) {
-    error_log('analizar_cedula — todos los proveedores fallaron: ' . implode(' | ', $errores));
-    echo json_encode(['success' => false, 'mensaje' => 'Error al analizar la imagen. Intenta nuevamente.']);
+    // DEBUG TEMPORAL — mostrar error real para diagnóstico
+    echo json_encode(['success' => false, 'mensaje' => 'Error al analizar la imagen. Intenta nuevamente.', '_debug' => $errores]);
     exit;
 }
 
