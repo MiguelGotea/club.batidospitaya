@@ -86,7 +86,7 @@ $extraParts = [
 
 // Proveedores con soporte Vision, en orden de preferencia
 $proveedores = [
-    'google' => 'gemini-3.8-flash',
+    'google' => null,              // usa default del AIService (gemini-flash-latest) — igual que depositos
     'openai' => 'gpt-4o-mini',
     'groq'   => 'llama-3.2-90b-vision-preview',
 ];
@@ -97,7 +97,7 @@ $errores      = [];
 foreach ($proveedores as $prov => $modelo) {
     try {
         $ai = new AIService($conn, $prov);
-        $ai->setModel($modelo);
+        if ($modelo) $ai->setModel($modelo);
 
         $respuesta = $ai->procesarPrompt($systemPrompt, $userPrompt, 0.1, $extraParts);
         if ($respuesta) break; // Éxito — salir del loop

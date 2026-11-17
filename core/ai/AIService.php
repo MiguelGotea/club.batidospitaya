@@ -46,7 +46,7 @@ class AIService
             case 'google':
                 // Google Gemini via Native REST API (v1beta)
                 $this->endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/';
-                $this->model = 'gemini-3.8-flash';
+                $this->model = 'gemini-flash-latest';
                 break;
             case 'cerebras':
                 $this->endpoint = 'https://api.cerebras.ai/v1/chat/completions';
@@ -170,39 +170,20 @@ class AIService
                 $parts = array_merge($parts, $extraParts);
             }
 
-            // Detectar si hay partes con inline_data (imagen/binario)
-            $tieneImagen = false;
-            foreach ($parts as $p) {
-                if (isset($p['inline_data'])) { $tieneImagen = true; break; }
-            }
-
-            // Con imágenes: Gemini responde mejor si la imagen va ANTES del texto
-            if ($tieneImagen && !empty($extraParts)) {
-                $parts = array_merge($extraParts, [
-                    ['text' => "Contexto del sistema:\n$systemPrompt\n\nPregunta del usuario:\n$userPrompt"]
-                ]);
-            }
-
-            $generationConfig = [
-                'temperature'     => $temperature,
-                'maxOutputTokens' => 4096,
-                'topP'            => 0.95,
-                'topK'            => 40,
-            ];
-
-            // response_mime_type: application/json causa problemas en llamadas multimodal con imágenes
-            if (!$tieneImagen) {
-                $generationConfig['response_mime_type'] = 'application/json';
-            }
-
             $payload = [
                 'contents' => [
                     [
-                        'role'  => 'user',
+                        'role' => 'user',
                         'parts' => $parts
                     ]
                 ],
-                'generationConfig' => $generationConfig
+                'generationConfig' => [
+                    'temperature' => $temperature,
+                    'maxOutputTokens' => 4096,
+                    'topP' => 0.95,
+                    'topK' => 40,
+                    'response_mime_type' => 'application/json'
+                ]
             ];
         } else {
             // Payload estándar compatible con OpenAI (Groq, DeepSeek, Cerebras, OpenAI)
