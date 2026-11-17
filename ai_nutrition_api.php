@@ -38,8 +38,8 @@ $groq_api_key = $_ENV['GROQ_API_KEY'] ?? '';
 $apis_config = [
     'groq' => [
         'endpoint' => 'https://api.groq.com/openai/v1/chat/completions',
-        'api_key'  => $groq_api_key,
-        'models'   => [
+        'api_key' => $groq_api_key,
+        'models' => [
             'llama-3.1-8b-instant',
             'gemma2-9b-it'
         ],
@@ -61,10 +61,10 @@ try {
     }
 
     echo json_encode([
-        'success'             => true,
-        'analysis'            => $analisis,
-        'hasAI'               => $apis_config['groq']['active'] && $analisis !== null,
-        'productos_analizados'=> count($productos_con_ingredientes)
+        'success' => true,
+        'analysis' => $analisis,
+        'hasAI' => $apis_config['groq']['active'] && $analisis !== null,
+        'productos_analizados' => count($productos_con_ingredientes)
     ]);
 
 } catch (Exception $e) {
@@ -73,14 +73,15 @@ try {
     $analisis_fallback = generateAdvancedBasicAnalysis($productos_con_ingredientes);
 
     echo json_encode([
-        'success'  => true,
+        'success' => true,
         'analysis' => $analisis_fallback,
         'fallback' => true,
-        'hasAI'    => false
+        'hasAI' => false
     ]);
 }
 
-function callGroqAPIWithFallback($productos_con_ingredientes, $config) {
+function callGroqAPIWithFallback($productos_con_ingredientes, $config)
+{
     $prompts = createProductPrompts($productos_con_ingredientes);
 
     foreach ($config['models'] as $model) {
@@ -106,16 +107,17 @@ function callGroqAPIWithFallback($productos_con_ingredientes, $config) {
     throw new Exception('Todos los modelos de Groq fallaron');
 }
 
-function callSingleGroqAPI($prompt, $api_key, $model) {
+function callSingleGroqAPI($prompt, $api_key, $model)
+{
     $context = "Eres un nutricionista experto especializado en batidos saludables y análisis nutricional. Proporciona información científica precisa sin listar ingredientes, enfócate en beneficios generales del producto.";
 
     $data = [
         'messages' => [
             ['role' => 'system', 'content' => $context],
-            ['role' => 'user',   'content' => $prompt]
+            ['role' => 'user', 'content' => $prompt]
         ],
-        'model'       => $model,
-        'max_tokens'  => 600,
+        'model' => $model,
+        'max_tokens' => 600,
         'temperature' => 0.7
     ];
 
@@ -130,7 +132,7 @@ function callSingleGroqAPI($prompt, $api_key, $model) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
-    $response  = curl_exec($ch);
+    $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
@@ -151,11 +153,12 @@ function callSingleGroqAPI($prompt, $api_key, $model) {
     throw new Exception('Respuesta inválida de Groq API');
 }
 
-function createProductPrompts($productos_con_ingredientes) {
+function createProductPrompts($productos_con_ingredientes)
+{
     $prompts = [];
 
     foreach ($productos_con_ingredientes as $item) {
-        $producto     = $item['producto'];
+        $producto = $item['producto'];
         $ingredientes = array_column($item['ingredientes'], 'ingrediente');
 
         if (empty($ingredientes)) {
@@ -186,7 +189,7 @@ Consideraciones:
 Máximo 300 palabras. Sé específico y científico.";
 
         $prompts[] = [
-            'prompt'          => $prompt,
+            'prompt' => $prompt,
             'producto_nombre' => $producto['DBBatidos_Nombre']
         ];
     }
@@ -194,23 +197,24 @@ Máximo 300 palabras. Sé específico y científico.";
     return $prompts;
 }
 
-function generateAdvancedBasicAnalysis($productos_con_ingredientes) {
+function generateAdvancedBasicAnalysis($productos_con_ingredientes)
+{
     $beneficios_db = [
-        'Mango'   => ['Vitamina C', 'Antioxidantes', 'Digestión', 'Sistema inmune'],
-        'Fresa'   => ['Vitamina C', 'Folato', 'Antioxidantes', 'Control de peso'],
+        'Mango' => ['Vitamina C', 'Antioxidantes', 'Digestión', 'Sistema inmune'],
+        'Fresa' => ['Vitamina C', 'Folato', 'Antioxidantes', 'Control de peso'],
         'Plátano' => ['Potasio', 'Energía', 'Estado de ánimo', 'Rendimiento'],
-        'Papaya'  => ['Papaína', 'Digestión', 'Antiinflamatorio', 'Vitamina A'],
-        'Pitaya'  => ['Antioxidantes', 'Fibra', 'Hierro', 'Detox'],
-        'Leche'   => ['Calcio', 'Proteínas', 'Huesos', 'Recuperación'],
-        'Yogurt'  => ['Probióticos', 'Digestión', 'Proteínas', 'Inmunidad'],
-        'Avena'   => ['Fibra', 'Saciedad', 'Energía', 'Colesterol'],
-        'Miel'    => ['Energía', 'Antioxidantes', 'Antibacteriano', 'Natural']
+        'Papaya' => ['Papaína', 'Digestión', 'Antiinflamatorio', 'Vitamina A'],
+        'Pitaya' => ['Antioxidantes', 'Fibra', 'Hierro', 'Detox'],
+        'Leche' => ['Calcio', 'Proteínas', 'Huesos', 'Recuperación'],
+        'Yogurt' => ['Probióticos', 'Digestión', 'Proteínas', 'Inmunidad'],
+        'Avena' => ['Fibra', 'Saciedad', 'Energía', 'Colesterol'],
+        'Miel' => ['Energía', 'Antioxidantes', 'Antibacteriano', 'Natural']
     ];
 
     $analisis_completo = '';
 
     foreach ($productos_con_ingredientes as $item) {
-        $producto     = $item['producto'];
+        $producto = $item['producto'];
         $ingredientes = $item['ingredientes'];
 
         if (empty($ingredientes)) {
@@ -226,7 +230,7 @@ function generateAdvancedBasicAnalysis($productos_con_ingredientes) {
             }
         }
 
-        $beneficios_unicos    = array_unique($beneficios_producto);
+        $beneficios_unicos = array_unique($beneficios_producto);
         $nutrientes_principales = array_slice($beneficios_unicos, 0, 4);
 
         $analisis_completo .= "<div class='producto-analysis'>";
@@ -251,7 +255,8 @@ function generateAdvancedBasicAnalysis($productos_con_ingredientes) {
     return $analisis_completo;
 }
 
-function formatAIResponse($text) {
+function formatAIResponse($text)
+{
     $text = trim($text);
     $text = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $text);
 
@@ -261,8 +266,10 @@ function formatAIResponse($text) {
     foreach ($lines as $line) {
         $trimmed_line = trim($line);
 
-        if (preg_match('/^<strong>.*<\/strong>:$/', $trimmed_line) ||
-            preg_match('/^<strong>.*<\/strong>$/', $trimmed_line)) {
+        if (
+            preg_match('/^<strong>.*<\/strong>:$/', $trimmed_line) ||
+            preg_match('/^<strong>.*<\/strong>$/', $trimmed_line)
+        ) {
             $formatted_lines[] = $trimmed_line;
             continue;
         }
