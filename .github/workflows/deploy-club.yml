@@ -63,9 +63,9 @@ jobs:
         ssh -o StrictHostKeyChecking=no -p 65002 ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }} << 'EOF'
           cd ${{ secrets.HOSTINGER_PATH_CLUB }}
           find . -maxdepth 1 -type d ! -path "." -exec chmod 755 {} \;
-          find core css js img -type d -exec chmod 755 {} \; 2>/dev/null || true
+          find core css js img vendor -type d -exec chmod 755 {} \; 2>/dev/null || true
           find . -maxdepth 1 -type f -exec chmod 644 {} \;
-          find core css js img -type f -exec chmod 644 {} \; 2>/dev/null || true
+          find core css js img vendor -type f -exec chmod 644 {} \; 2>/dev/null || true
           echo "✅ Permisos actualizados."
         EOF
         
