@@ -17,7 +17,6 @@ if (!$esta_logueado) {
     exit();
 }
 
-
 // Leer datos de sesión — soporta ambos esquemas de keys
 $membresia = $_SESSION['club_membresia'] ?? $_SESSION['membresia'] ?? '';
 $nombre = $_SESSION['club_nombre'] ?? $_SESSION['nombre'] ?? '';
