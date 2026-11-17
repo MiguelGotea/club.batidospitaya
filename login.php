@@ -117,11 +117,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     // ── PRIMERA VEZ — verificar con cédula (migración transparente) ──
 
                     $stmt2 = $conn->prepare("
-                        SELECT membresia, nombre, apellido, cedula
+                        SELECT membresia, nombre, apellido, TRIM(cedula) AS cedula
                         FROM   clientesclub
                         WHERE  membresia = ?
                     ");
-                    $stmt2->execute([$membresia]);
+                    $stmt2->execute([trim($membresia)]);
                     $miembro = $stmt2->fetch();
 
                     if (!$miembro) {
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         $error_type    = 'sin_cedula';
                         $error_message = $membresia; // se usa para personalizar el mensaje
 
-                    } elseif ($password === $miembro['cedula']) {
+                    } elseif (trim($password) === trim($miembro['cedula'])) {
                         // 4b. ✅ Cédula coincide → crear hash y registrar primera vez
                         $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
 
@@ -159,7 +159,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
             } catch (Exception $e) {
                 error_log('[Club Login Error] ' . $e->getMessage());
-                $error_message = 'Error del sistema. Por favor intenta de nuevo.';
+                // Detectar si la tabla no existe aún
+                if (strpos($e->getMessage(), "club_credenciales") !== false
+                 || strpos($e->getMessage(), "doesn't exist") !== false
+                 || strpos($e->getMessage(), "Table") !== false) {
+                    $error_message = 'Sistema en configuración. Contacta al administrador. (tabla pendiente)';
+                } else {
+                    $error_message = 'Error del sistema. Por favor intenta de nuevo.';
+                }
             }
         }
     }
