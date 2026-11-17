@@ -3,11 +3,13 @@
  * login.php — Portal de Miembros Club Pitaya
  * Estándar corporativo: Bootstrap 5, sin gradientes, logo SVG, bcrypt
  */
+
+// ⚠️ LiteSpeed Hostinger: session_start() DEBE ir antes de require_once conexion.php
+if (session_status() === PHP_SESSION_NONE) session_start();
+
 require_once __DIR__ . '/core/database/conexion.php';
 
 date_default_timezone_set('America/Managua');
-
-if (session_status() === PHP_SESSION_NONE) session_start();
 
 // Ya logueado → ir al dashboard
 if ($_SESSION['club_logged_in'] ?? false) {
@@ -87,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
                         $redirect = $_SESSION['redirect_after_login'] ?? 'dashboard.php';
                         unset($_SESSION['redirect_after_login']);
-                        session_write_close();
                         header('Location: ' . $redirect);
                         exit();
 
@@ -152,7 +153,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         $_SESSION['primer_ingreso']    = true;
                         unset($_SESSION['csrf_token']); // invalidar CSRF viejo
 
-                        session_write_close();
                         header('Location: dashboard.php');
                         exit();
 

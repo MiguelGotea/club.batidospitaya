@@ -2,9 +2,10 @@
 // dashboard.php - Dashboard Portal Club Pitaya
 // Compatibilidad: acepta sesiones del login nuevo (club_*) y del viejo (logged_in)
 
-require_once __DIR__ . '/core/database/conexion.php'; // $conn PDO
-
+// ⚠️ LiteSpeed Hostinger: session_start() DEBE ir antes de require_once conexion.php
 if (session_status() === PHP_SESSION_NONE) session_start();
+
+require_once __DIR__ . '/core/database/conexion.php'; // $conn PDO
 
 // Soporte para key nueva (club_logged_in) y key vieja (logged_in)
 $esta_logueado = ($_SESSION['club_logged_in'] ?? false)
