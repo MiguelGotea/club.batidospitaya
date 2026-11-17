@@ -3,23 +3,25 @@
 // Compatibilidad: acepta sesiones del login nuevo (club_*) y del viejo (logged_in)
 
 // ⚠️ LiteSpeed Hostinger: session_start() DEBE ir antes de require_once conexion.php
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (session_status() === PHP_SESSION_NONE)
+    session_start();
 
 require_once __DIR__ . '/core/database/conexion.php'; // $conn PDO
 
 // Soporte para key nueva (club_logged_in) y key vieja (logged_in)
 $esta_logueado = ($_SESSION['club_logged_in'] ?? false)
-              || ($_SESSION['logged_in']      ?? false);
+    || ($_SESSION['logged_in'] ?? false);
 
 if (!$esta_logueado) {
     header("Location: login.php");
     exit();
 }
 
+
 // Leer datos de sesión — soporta ambos esquemas de keys
 $membresia = $_SESSION['club_membresia'] ?? $_SESSION['membresia'] ?? '';
-$nombre    = $_SESSION['club_nombre']    ?? $_SESSION['nombre']    ?? '';
-$apellido  = $_SESSION['club_apellido'] ?? $_SESSION['apellido']  ?? '';
+$nombre = $_SESSION['club_nombre'] ?? $_SESSION['nombre'] ?? '';
+$apellido = $_SESSION['club_apellido'] ?? $_SESSION['apellido'] ?? '';
 
 // Alias para compatibilidad con el resto del dashboard (usa $db->prepare())
 $db = $conn;
@@ -116,12 +118,12 @@ try {
                                 WHERE v.CodCliente = :membresia
                                 AND g.Tipo IN ('Batido', 'Bowl', 'Waffles', 'Pitaya Store')
                                 LIMIT 10";
-    
+
     $stmt_productos = $db->prepare($query_productos_usuario);
     $stmt_productos->bindParam(':membresia', $membresia);
     $stmt_productos->execute();
     $productos_usuario = $stmt_productos->fetchAll(PDO::FETCH_COLUMN);
-    
+
 
     // Top 3 productos más consumidos (para análisis nutricional detallado)
     $query_top_productos = "SELECT v.DBBatidos_Nombre, v.CodProducto, SUM(v.Cantidad) as total_cantidad,
@@ -154,7 +156,7 @@ try {
                                       GROUP BY i.CodIngrediente, i.Nombre, i.Unidad
                                       ORDER BY cantidad_total DESC
                                       LIMIT 3";
-        
+
         $stmt_ingredientes = $db->prepare($query_ingredientes_cocina);
         $stmt_ingredientes->execute($productos_usuario);
         $top_ingredientes = $stmt_ingredientes->fetchAll(PDO::FETCH_ASSOC);
@@ -173,12 +175,12 @@ try {
                                                AND i.Cocina = 'VERDADERO'
                                                AND i.CodIngrediente NOT IN ('B001', 'B004', 'E004') -- EXCLUIR ESTOS INGREDIENTES
                                                ORDER BY sr.Cantidad DESC";
-                
+
                 $stmt_completo = $db->prepare($query_ingredientes_completo);
                 $stmt_completo->bindParam(':cod_producto', $producto['CodProducto']);
                 $stmt_completo->execute();
                 $ingredientes_del_producto = $stmt_completo->fetchAll(PDO::FETCH_ASSOC);
-                
+
                 $productos_con_ingredientes[] = [
                     'producto' => $producto,
                     'ingredientes' => $ingredientes_del_producto
@@ -187,7 +189,7 @@ try {
         }
     }
 
-} catch(Exception $e) {
+} catch (Exception $e) {
     // En caso de error, mostrar valores por defecto
     $compras = [];
     $total_puntos = 0;
@@ -203,6 +205,7 @@ try {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -217,11 +220,22 @@ try {
 
     <style>
         /* Todo en css/club_global.css — solo overrides mínimos aquí */
-        .points-badge { background: var(--pitaya-secondary); }
-        .modal        { display: none; align-items: center; justify-content: center; }
-        .ingredient-detail-btn:hover { background: var(--pitaya-secondary) !important; }
+        .points-badge {
+            background: var(--pitaya-secondary);
+        }
+
+        .modal {
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ingredient-detail-btn:hover {
+            background: var(--pitaya-secondary) !important;
+        }
     </style>
 </head>
+
 <body>
     <?php require_once __DIR__ . '/header_club.php'; ?>
 
@@ -235,24 +249,33 @@ try {
 
         <!-- Stats por Tipo -->
         <div class="stats-grid">
-            <?php foreach($stats_por_tipo as $tipo_stat): ?>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <?php 
-                    $icon = '';
-                    switch($tipo_stat['Tipo']) {
-                        case 'Batido': $icon = '🥤'; break;
-                        case 'Bowl': $icon = '🥣'; break;
-                        case 'Waffles': $icon = '🧇'; break;
-                        case 'Pitaya Store': $icon = '🛒'; break;
-                        default: $icon = '🍽️';
-                    }
-                    echo $icon;
-                    ?>
+            <?php foreach ($stats_por_tipo as $tipo_stat): ?>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <?php
+                        $icon = '';
+                        switch ($tipo_stat['Tipo']) {
+                            case 'Batido':
+                                $icon = '🥤';
+                                break;
+                            case 'Bowl':
+                                $icon = '🥣';
+                                break;
+                            case 'Waffles':
+                                $icon = '🧇';
+                                break;
+                            case 'Pitaya Store':
+                                $icon = '🛒';
+                                break;
+                            default:
+                                $icon = '🍽️';
+                        }
+                        echo $icon;
+                        ?>
+                    </div>
+                    <div class="stat-number"><?php echo $tipo_stat['total_productos']; ?></div>
+                    <div class="stat-label"><?php echo htmlspecialchars($tipo_stat['Tipo']); ?></div>
                 </div>
-                <div class="stat-number"><?php echo $tipo_stat['total_productos']; ?></div>
-                <div class="stat-label"><?php echo htmlspecialchars($tipo_stat['Tipo']); ?></div>
-            </div>
             <?php endforeach; ?>
         </div>
 
@@ -271,7 +294,7 @@ try {
             <div class="stat-card">
                 <div class="stat-icon">📅</div>
                 <div class="stat-number">
-                    <?php 
+                    <?php
                     if ($stats['ultima_compra']) {
                         echo date('d/m/Y', strtotime($stats['ultima_compra']));
                     } else {
@@ -282,18 +305,20 @@ try {
                 <div class="stat-label">Última Compra</div>
             </div>
             <?php if ($producto_favorito): ?>
-            <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-number"><?php echo $producto_favorito['total_cantidad']; ?></div>
-                <div class="stat-label">Tu <?php echo htmlspecialchars($producto_favorito['Tipo']); ?> favorito:<br><strong><?php echo htmlspecialchars($producto_favorito['DBBatidos_Nombre']); ?></strong></div>
-            </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-number"><?php echo $producto_favorito['total_cantidad']; ?></div>
+                    <div class="stat-label">Tu <?php echo htmlspecialchars($producto_favorito['Tipo']); ?>
+                        favorito:<br><strong><?php echo htmlspecialchars($producto_favorito['DBBatidos_Nombre']); ?></strong>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
 
         <!-- Purchase History -->
         <div class="section">
             <h2 class="section-title">Historial de Compras Recientes</h2>
-            
+
             <?php if (count($compras) > 0): ?>
                 <table class="purchases-table">
                     <thead>
@@ -313,15 +338,24 @@ try {
                                 <td><?php echo htmlspecialchars($compra['fecha_formateada']); ?></td>
                                 <td><strong><?php echo htmlspecialchars($compra['DBBatidos_Nombre']); ?></strong></td>
                                 <td>
-                                    <?php 
+                                    <?php
                                     if ($compra['Tipo']) {
                                         $badge_color = '';
-                                        switch($compra['Tipo']) {
-                                            case 'Batido': $badge_color = 'background: #51B8AC;'; break;
-                                            case 'Bowl': $badge_color = 'background: #0E544C;'; break;
-                                            case 'Waffles': $badge_color = 'background: #FF6B6B;'; break;
-                                            case 'Pitaya Store': $badge_color = 'background: #FFE066; color: #333;'; break;
-                                            default: $badge_color = 'background: #6c757d;';
+                                        switch ($compra['Tipo']) {
+                                            case 'Batido':
+                                                $badge_color = 'background: #51B8AC;';
+                                                break;
+                                            case 'Bowl':
+                                                $badge_color = 'background: #0E544C;';
+                                                break;
+                                            case 'Waffles':
+                                                $badge_color = 'background: #FF6B6B;';
+                                                break;
+                                            case 'Pitaya Store':
+                                                $badge_color = 'background: #FFE066; color: #333;';
+                                                break;
+                                            default:
+                                                $badge_color = 'background: #6c757d;';
                                         }
                                         echo '<span style="' . $badge_color . ' color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">' . htmlspecialchars($compra['Tipo']) . '</span>';
                                     } else {
@@ -351,45 +385,55 @@ try {
 
         <!-- Sección de Ingredientes Favoritos -->
         <?php if (!empty($top_ingredientes)): ?>
-        <div class="section">
-            <h2 class="section-title">🌿 Tus Ingredientes Favoritos</h2>
-            <div class="favorites-grid">
-                <?php 
-                $max_ingrediente = $top_ingredientes[0]['cantidad_total'] ?? 1;
-                foreach ($top_ingredientes as $ingrediente): 
-                    $porcentaje = ($ingrediente['cantidad_total'] / $max_ingrediente) * 100;
-                ?>
-                <div class="favorite-item">
-                    <div style="flex: 1;">
-                        <div class="favorite-name" style="font-weight: 600; color: var(--pitaya-secondary); margin-bottom: 8px;">
-                            <?php echo htmlspecialchars($ingrediente['ingrediente']); ?>
+            <div class="section">
+                <h2 class="section-title">🌿 Tus Ingredientes Favoritos</h2>
+                <div class="favorites-grid">
+                    <?php
+                    $max_ingrediente = $top_ingredientes[0]['cantidad_total'] ?? 1;
+                    foreach ($top_ingredientes as $ingrediente):
+                        $porcentaje = ($ingrediente['cantidad_total'] / $max_ingrediente) * 100;
+                        ?>
+                        <div class="favorite-item">
+                            <div style="flex: 1;">
+                                <div class="favorite-name"
+                                    style="font-weight: 600; color: var(--pitaya-secondary); margin-bottom: 8px;">
+                                    <?php echo htmlspecialchars($ingrediente['ingrediente']); ?>
+                                </div>
+                                <div class="favorite-stats" style="display: flex; gap: 15px; font-size: 0.9rem; color: #666;">
+                                    <span>📊 <?php echo number_format($ingrediente['cantidad_total'], 1); ?>
+                                        <?php echo htmlspecialchars($ingrediente['Unidad']); ?></span>
+                                </div>
+                                <div class="progress-bar"
+                                    style="width: 100%; height: 8px; background: #eee; border-radius: 4px; margin-top: 8px; overflow: hidden;">
+                                    <div class="progress-fill"
+                                        style="height: 100%; background: var(--pitaya-primary); border-radius: 4px; transition: width 0.6s ease; width: <?php echo $porcentaje; ?>%;">
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="ingredient-detail-btn"
+                                onclick="showIngredientInfo('<?php echo htmlspecialchars($ingrediente['ingrediente']); ?>')"
+                                style="background: var(--pitaya-primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-left: 15px;">
+                                Info
+                            </button>
                         </div>
-                        <div class="favorite-stats" style="display: flex; gap: 15px; font-size: 0.9rem; color: #666;">
-                            <span>📊 <?php echo number_format($ingrediente['cantidad_total'], 1); ?> <?php echo htmlspecialchars($ingrediente['Unidad']); ?></span>
-                        </div>
-                        <div class="progress-bar" style="width: 100%; height: 8px; background: #eee; border-radius: 4px; margin-top: 8px; overflow: hidden;">
-                            <div class="progress-fill" style="height: 100%; background: var(--pitaya-primary); border-radius: 4px; transition: width 0.6s ease; width: <?php echo $porcentaje; ?>%;"></div>
-                        </div>
-                    </div>
-                    <button class="ingredient-detail-btn" onclick="showIngredientInfo('<?php echo htmlspecialchars($ingrediente['ingrediente']); ?>')" style="background: var(--pitaya-primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-left: 15px;">
-                        Info
-                    </button>
+                    <?php endforeach; ?>
                 </div>
-                <?php endforeach; ?>
             </div>
-        </div>
         <?php endif; ?>
 
         <!-- Sección de Análisis Nutricional IA -->
         <div class="section" style="background: var(--pitaya-secondary); color: white;">
             <h2 class="section-title" style="color: white;">🤖 Análisis Nutricional con IA</h2>
-            <p style="margin-bottom: 20px; opacity: 0.9;">Obtén recomendaciones personalizadas basadas en tus ingredientes favoritos</p>
-            
-            <button id="generate-health-btn" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 15px 30px; border-radius: 25px; cursor: pointer; font-weight: 600; font-size: 16px; transition: all 0.3s ease;">
+            <p style="margin-bottom: 20px; opacity: 0.9;">Obtén recomendaciones personalizadas basadas en tus
+                ingredientes favoritos</p>
+
+            <button id="generate-health-btn"
+                style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 15px 30px; border-radius: 25px; cursor: pointer; font-weight: 600; font-size: 16px; transition: all 0.3s ease;">
                 <span id="health-btn-text">Generar Análisis de Salud</span>
             </button>
-            
-            <div id="health-analysis-content" style="display: none; margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 12px;">
+
+            <div id="health-analysis-content"
+                style="display: none; margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 12px;">
                 <!-- Contenido del análisis aparecerá aquí -->
             </div>
         </div>
@@ -397,10 +441,12 @@ try {
         <!-- Personal Info -->
         <div class="section">
             <h2 class="section-title">Información Personal</h2>
-            <p><strong>Nombre:</strong> <?php echo htmlspecialchars($miembro['nombre'] . ' ' . $miembro['apellido']); ?></p>
+            <p><strong>Nombre:</strong> <?php echo htmlspecialchars($miembro['nombre'] . ' ' . $miembro['apellido']); ?>
+            </p>
             <p><strong>Membresía:</strong> <?php echo htmlspecialchars($miembro['membresia']); ?></p>
             <?php if (isset($miembro['fecha_registro'])): ?>
-            <p><strong>Fecha de Registro:</strong> <?php echo date('d/m/Y', strtotime($miembro['fecha_registro'])); ?></p>
+                <p><strong>Fecha de Registro:</strong> <?php echo date('d/m/Y', strtotime($miembro['fecha_registro'])); ?>
+                </p>
             <?php endif; ?>
         </div>
     </div>
@@ -449,15 +495,15 @@ try {
             const button = document.getElementById('generate-health-btn');
             const btnText = document.getElementById('health-btn-text');
             const content = document.getElementById('health-analysis-content');
-            
-            
+
+
             btnText.innerHTML = '⏳ Conectando con IA moderna...';
             button.disabled = true;
-            
+
             try {
                 const productosConIngredientes = <?php echo json_encode($productos_con_ingredientes); ?>;
-                
-                
+
+
                 if (!productosConIngredientes || productosConIngredientes.length === 0) {
                     content.innerHTML = `
                         <div class="no-analysis">
@@ -471,22 +517,22 @@ try {
                     button.disabled = false;
                     return;
                 }
-                
+
                 // Mostrar productos mientras se procesa
                 let analysisHTML = '<h3>🌟 Análisis Nutricional por Producto</h3>';
                 analysisHTML += `<p style="opacity: 0.9; margin-bottom: 20px;">Analizando ${productosConIngredientes.length} productos favoritos...</p>`;
-                
+
                 // Mostrar productos con ingredientes básicos
                 analysisHTML += '<div class="productos-preview">';
                 productosConIngredientes.forEach((item, index) => {
                     const producto = item.producto;
                     const ingredientes = item.ingredientes || [];
-                    
+
                     // Filtrar ingredientes excluidos también en el frontend por seguridad
-                    const ingredientesFiltrados = ingredientes.filter(ing => 
+                    const ingredientesFiltrados = ingredientes.filter(ing =>
                         !['B001', 'B004', 'E004'].includes(ing.CodIngrediente || '')
                     );
-                    
+
                     analysisHTML += `
                         <div class="producto-preview">
                             <h4>🥤 ${producto.DBBatidos_Nombre}</h4>
@@ -498,23 +544,23 @@ try {
                             <div class="ingredientes-count">
                                 🌿 ${ingredientesFiltrados.length} ingredientes de cocina (excluyendo B001, B004, E004)
                             </div>
-                            ${ingredientesFiltrados.length > 0 ? 
-                                `<div class="ingredientes-list" style="margin-top: 8px; font-size: 0.85rem; opacity: 0.8;">
+                            ${ingredientesFiltrados.length > 0 ?
+                            `<div class="ingredientes-list" style="margin-top: 8px; font-size: 0.85rem; opacity: 0.8;">
                                     ${ingredientesFiltrados.map(ing => `• ${ing.ingrediente}`).join('<br>')}
-                                </div>` : 
-                                '<div style="color: #FFE066; font-size: 0.85rem; margin-top: 8px;">⚠️ Solo ingredientes básicos después del filtro</div>'
-                            }
+                                </div>` :
+                            '<div style="color: #FFE066; font-size: 0.85rem; margin-top: 8px;">⚠️ Solo ingredientes básicos después del filtro</div>'
+                        }
                         </div>
                     `;
                 });
                 analysisHTML += '</div>';
-                
+
                 content.innerHTML = analysisHTML;
                 content.style.display = 'block';
-                
+
                 // Llamar a la API de IA moderna
                 btnText.innerHTML = '🤖 Generando análisis con IA...';
-                
+
                 const aiResponse = await fetch('ai_nutrition_api.php', {
                     method: 'POST',
                     headers: {
@@ -525,23 +571,23 @@ try {
                         ingredientes_excluidos: ['B001', 'B004', 'E004'] // Informar a la API sobre la exclusión
                     })
                 });
-                
+
                 if (!aiResponse.ok) {
                     throw new Error(`Error HTTP: ${aiResponse.status}`);
                 }
-                
+
                 const aiData = await aiResponse.json();
-                
+
                 if (aiData.success) {
                     // Agregar el análisis de IA al contenido existente
                     analysisHTML += `
                         <div class="ai-analysis-section">
                             <div class="ai-header">
                                 <h4>🤖 Análisis Nutricional ${aiData.hasAI ? 'con IA Avanzada' : 'Básico'}</h4>
-                                ${aiData.hasAI ? 
-                                    '<div class="ai-badge success">✅ Powered by llama-3.1-8b-instant</div>' : 
-                                    '<div class="ai-badge basic">📊 Análisis básico (configurar API para IA avanzada)</div>'
-                                }
+                                ${aiData.hasAI ?
+                            '<div class="ai-badge success">✅ Powered by llama-3.1-8b-instant</div>' :
+                            '<div class="ai-badge basic">📊 Análisis básico (configurar API para IA avanzada)</div>'
+                        }
                             </div>
                             <div class="filter-info" style="background: rgba(255,193,7,0.1); padding: 10px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #FFC107;">
                                 <strong>🔍 Filtro aplicado:</strong> Ingredientes B001, B004, E004 excluidos del análisis
@@ -551,7 +597,7 @@ try {
                             </div>
                         </div>
                     `;
-                    
+
                     // Mostrar notificación de éxito
                     if (aiData.hasAI) {
                         showNotification('✅ Análisis generado con IA moderna (ingredientes excluidos)', 'success');
@@ -561,14 +607,14 @@ try {
                 } else {
                     throw new Error(aiData.error || 'Error desconocido en análisis');
                 }
-                
+
                 content.innerHTML = analysisHTML;
                 btnText.innerHTML = '🔄 Actualizar Análisis';
                 button.disabled = false;
-                
+
             } catch (error) {
                 console.error('Error en análisis:', error);
-                
+
                 content.innerHTML = `
                     <div class="error-analysis">
                         <h4>❌ Error en el Análisis</h4>
@@ -582,7 +628,7 @@ try {
                 content.style.display = 'block';
                 btnText.innerHTML = 'Reintentar Análisis';
                 button.disabled = false;
-                
+
                 showNotification('⚠️ Error en análisis - Intenta nuevamente', 'error');
             }
         }
@@ -595,14 +641,14 @@ try {
                 <span>${message}</span>
                 <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;font-size:18px;cursor:pointer;margin-left:10px;">&times;</button>
             `;
-            
+
             // Estilos según tipo
             const styles = {
                 success: 'background: #d4edda; color: #155724; border-left: 4px solid #28a745;',
                 error: 'background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545;',
                 info: 'background: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8;'
             };
-            
+
             notification.style.cssText = `
                 position: fixed;
                 top: 20px;
@@ -615,9 +661,9 @@ try {
                 ${styles[type]}
                 animation: slideIn 0.3s ease-out;
             `;
-            
+
             document.body.appendChild(notification);
-            
+
             // Auto-remover después de 5 segundos
             setTimeout(() => {
                 if (notification.parentElement) {
@@ -729,22 +775,22 @@ try {
         }
 
         // Animación de contadores (simplificada)
-        document.addEventListener('DOMContentLoaded', function() {
-            
+        document.addEventListener('DOMContentLoaded', function () {
+
             // Agregar event listener al botón de análisis de salud
             const healthBtn = document.getElementById('generate-health-btn');
             if (healthBtn) {
-                healthBtn.addEventListener('click', function() {
+                healthBtn.addEventListener('click', function () {
                     generateHealthAnalysis();
                 });
             }
-            
+
             const counters = document.querySelectorAll('.stat-number');
-            
+
             counters.forEach(counter => {
                 const text = counter.innerText;
                 const number = parseInt(text.replace(/,/g, ''));
-                
+
                 if (isNaN(number) || number === 0) return;
 
                 let current = 0;
@@ -766,4 +812,5 @@ try {
     <!-- Bootstrap 5 JS (local) -->
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
