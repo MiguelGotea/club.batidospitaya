@@ -434,6 +434,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         <!-- ── Formulario ──────────────────────────────────── -->
         <form method="POST" id="loginForm" novalidate autocomplete="off">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+            <!-- login=1 siempre presente: el botón submit se deshabilita con JS y browsers lo excluyen del POST -->
+            <input type="hidden" name="login" value="1">
 
             <div class="mb-3">
                 <label for="membresia" class="form-label">
