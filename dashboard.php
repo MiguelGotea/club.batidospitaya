@@ -227,12 +227,12 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Portal — Club Batidos Pitaya</title>
 
-    <!-- Bootstrap 5 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <!-- FontAwesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- CSS corporativo -->
-    <link rel="stylesheet" href="css/club_global.css">
+    <!-- Bootstrap 5 (local) -->
+    <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+    <!-- FontAwesome 6 (local) -->
+    <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+    <!-- CSS corporativo — ?v= fuerza recarga cuando el archivo cambia -->
+    <link rel="stylesheet" href="css/club_global.css?v=<?= filemtime(__DIR__ . '/css/club_global.css') ?>">
 
     <style>
         /* Todo en css/club_global.css — solo overrides mínimos aquí */
@@ -825,7 +825,7 @@ try {
     </script>
     <?php require_once __DIR__ . '/footer_club.php'; ?>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap 5 JS (local) -->
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
