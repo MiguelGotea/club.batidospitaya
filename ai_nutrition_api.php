@@ -139,31 +139,34 @@ function analizarConIA(AIService $ai, array $productos): ?string
 
 /**
  * Convierte la respuesta de la IA a HTML limpio para el dashboard.
- * Detecta automáticamente si la IA devolvió JSON y extrae el texto.
+ * - Si la IA devolvió JSON, concatena TODOS los valores string en orden.
+ * - Luego aplica formateo markdown básico → HTML.
  */
 function formatearRespuesta(string $texto): string
 {
     $texto = trim($texto);
 
-    // Si la IA devolvió JSON (ej. {"analisis_nutricional": "..."}), extraer el texto
-    if (str_starts_with($texto, '{') || str_starts_with($texto, '[')) {
+    // Limpiar bloques de código markdown ```...``` que a veces envuelven el JSON
+    $texto = preg_replace('/```(?:json)?\s*([\s\S]*?)```/i', '$1', $texto);
+    $texto = trim($texto);
+
+    // Si la IA devolvió JSON, extraer y concatenar TODOS los valores string
+    if ($texto !== '' && ($texto[0] === '{' || $texto[0] === '[')) {
         $decoded = json_decode($texto, true);
         if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-            // Buscar el primer valor de tipo string en el JSON
-            $texto = '';
-            array_walk_recursive($decoded, function ($val) use (&$texto) {
-                if (is_string($val) && strlen($val) > $texto) {
-                    $texto = $val;
+            $partes = [];
+            array_walk_recursive($decoded, function ($val) use (&$partes) {
+                if (is_string($val) && trim($val) !== '') {
+                    $partes[] = trim($val);
                 }
             });
+            $texto = implode("\n\n", $partes);
         }
     }
 
-    // Limpiar bloques de código markdown ```...```
-    $texto = preg_replace('/```[\s\S]*?```/', '', $texto);
     // **negrita** → <strong>
     $texto = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $texto);
-    // listas con - o * → bullets
+    // listas con - o * al inicio de línea → bullets
     $texto = preg_replace('/^[\-\*]\s+/m', '• ', $texto);
     // listas numeradas → bullets
     $texto = preg_replace('/^\d+\.\s+/m', '• ', $texto);
