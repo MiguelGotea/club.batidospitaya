@@ -1,18 +1,21 @@
-# Configuración con credenciales — NUNCA al repositorio
-config.php
+# ── Excluir SOLO lo que NO debe ir a Git ────────────────────────────────────
+# Todo lo demás se trackea automáticamente
 
-# SQL de setup — solo para ejecución manual local
+# ── Entorno: credenciales — NUNCA a Git ni al host vía repo ─────────────────
+core/database/env.php             # credenciales locales / producción
+config.php                        # wrapper legacy (aún presente durante transición)
+
+# ── Archivos SQL de setup — solo ejecución manual local ─────────────────────
 *.sql
 
-# Entorno y agente
+# ── Uploads (archivos generados / imágenes del usuario) ─────────────────────
+**/uploads/
+
+# ── Sistema / IDE ────────────────────────────────────────────────────────────
 .env
 .gemini/
 .agent/
-
-# Dependencias
 node_modules/
-
-# Archivos de Sistema / IDE
 .vscode/
 .idea/
 .DS_Store
