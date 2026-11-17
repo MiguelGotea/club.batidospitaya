@@ -15,3 +15,4 @@ date_default_timezone_set('America/Managua');
 require_once __DIR__ . '/core/database/conexion.php';
 
 // $conn (PDO) ya está disponible desde este punto en cualquier archivo que haga require_once 'config.php'
+
