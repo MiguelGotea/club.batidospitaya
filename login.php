@@ -77,16 +77,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         $miembro->execute([$membresia]);
                         $datos = $miembro->fetch();
 
-                        session_regenerate_id(true);
+                        // LiteSpeed: NO usar session_regenerate_id — rompe la cookie de sesión en redirect
                         $_SESSION['club_logged_in']     = true;
                         $_SESSION['club_membresia']     = $membresia;
                         $_SESSION['club_nombre']        = $datos['nombre']   ?? '';
                         $_SESSION['club_apellido']      = $datos['apellido'] ?? '';
                         $_SESSION['last_regeneration']  = time();
+                        unset($_SESSION['csrf_token']); // invalidar CSRF viejo
 
                         $redirect = $_SESSION['redirect_after_login'] ?? 'dashboard.php';
                         unset($_SESSION['redirect_after_login']);
-                        session_write_close(); // LiteSpeed: forzar escritura antes de redirigir
+                        session_write_close();
                         header('Location: ' . $redirect);
                         exit();
 
@@ -142,15 +143,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                             VALUES (?, ?, NOW())
                         ")->execute([$membresia, $hash]);
 
-                        session_regenerate_id(true);
+                        // LiteSpeed: NO usar session_regenerate_id — rompe la cookie de sesión en redirect
                         $_SESSION['club_logged_in']    = true;
                         $_SESSION['club_membresia']    = $membresia;
                         $_SESSION['club_nombre']       = $miembro['nombre']   ?? '';
                         $_SESSION['club_apellido']     = $miembro['apellido'] ?? '';
                         $_SESSION['last_regeneration'] = time();
-                        $_SESSION['primer_ingreso']    = true; // para mostrar bienvenida especial
+                        $_SESSION['primer_ingreso']    = true;
+                        unset($_SESSION['csrf_token']); // invalidar CSRF viejo
 
-                        session_write_close(); // LiteSpeed: forzar escritura antes de redirigir
+                        session_write_close();
                         header('Location: dashboard.php');
                         exit();
 
