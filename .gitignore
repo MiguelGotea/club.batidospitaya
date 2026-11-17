@@ -1,4 +1,10 @@
-# Configuración de Entorno
+# Configuración con credenciales — NUNCA al repositorio
+config.php
+
+# SQL de setup — solo para ejecución manual local
+*.sql
+
+# Entorno y agente
 .env
 .gemini/
 .agent/

@@ -1,0 +1,323 @@
+/*
+ * club_global.css — Estilos Globales Portal de Miembros Club Pitaya
+ * Estándar corporativo: sin gradientes, Bootstrap 5 compatible
+ * Colores: #51B8AC (primario) | #0E544C (secundario) | #218838 (acción)
+ */
+
+/* ─── Variables CSS Corporativas ─────────────────────────────── */
+:root {
+    --pitaya-primary:   #51B8AC;
+    --pitaya-secondary: #0E544C;
+    --pitaya-action:    #218838;
+    --pitaya-action-hv: #1d6f42;
+    --pitaya-light:     #F6F6F6;
+    --pitaya-white:     #FFFFFF;
+    --pitaya-border:    #dee2e6;
+    --pitaya-text:      #343a40;
+    --pitaya-muted:     #6c757d;
+    --shadow-soft:   0 2px 12px rgba(14, 84, 76, 0.08);
+    --shadow-medium: 0 4px 24px rgba(14, 84, 76, 0.13);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+/* ─── Reset y Base ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    font-family: Calibri, 'Segoe UI', Arial, sans-serif;
+    background-color: var(--pitaya-light);
+    color: var(--pitaya-text);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* ─── Header del Portal ──────────────────────────────────────── */
+.club-header {
+    background-color: var(--pitaya-secondary);
+    color: var(--pitaya-white);
+    padding: 0;
+    box-shadow: var(--shadow-medium);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.club-header .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--pitaya-white) !important;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+}
+
+.club-header .navbar-brand img {
+    height: 36px;
+    width: auto;
+    filter: brightness(0) invert(1); /* logo blanco sobre fondo oscuro */
+}
+
+.club-header .nav-link {
+    color: rgba(255,255,255,0.85) !important;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--radius-sm);
+}
+
+.club-header .nav-link:hover {
+    color: var(--pitaya-white) !important;
+    background-color: rgba(255,255,255,0.1);
+}
+
+.club-header .nav-link.active {
+    color: var(--pitaya-white) !important;
+    background-color: rgba(255,255,255,0.15);
+}
+
+.club-header .btn-logout {
+    background-color: rgba(255,255,255,0.12);
+    color: var(--pitaya-white) !important;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: var(--radius-sm);
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.club-header .btn-logout:hover {
+    background-color: rgba(255,255,255,0.22);
+    border-color: rgba(255,255,255,0.5);
+}
+
+/* ─── Cards ─────────────────────────────────────────────────── */
+.club-card {
+    background: var(--pitaya-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    border: none;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.club-card-header {
+    border-bottom: 2px solid var(--pitaya-light);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    color: var(--pitaya-secondary);
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.club-card-header i {
+    color: var(--pitaya-primary);
+}
+
+/* ─── Stat Badges (KPIs del dashboard) ──────────────────────── */
+.club-stat {
+    background: var(--pitaya-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 20px 24px;
+    border-left: 4px solid var(--pitaya-primary);
+    margin-bottom: 20px;
+}
+
+.club-stat .stat-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--pitaya-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.club-stat .stat-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--pitaya-secondary);
+    line-height: 1.1;
+}
+
+.club-stat .stat-icon {
+    font-size: 1.8rem;
+    color: var(--pitaya-primary);
+    opacity: 0.6;
+}
+
+/* ─── Botones ────────────────────────────────────────────────── */
+.btn-pitaya-primary {
+    background-color: var(--pitaya-secondary);
+    color: var(--pitaya-white);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 10px 24px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.btn-pitaya-primary:hover {
+    background-color: #0a3d37;
+    color: var(--pitaya-white);
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
+}
+
+.btn-pitaya-action {
+    background-color: var(--pitaya-action);
+    color: var(--pitaya-white);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 10px 24px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.btn-pitaya-action:hover {
+    background-color: var(--pitaya-action-hv);
+    color: var(--pitaya-white);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(33, 136, 56, 0.25);
+}
+
+.btn-pitaya-outline {
+    background-color: transparent;
+    color: var(--pitaya-secondary);
+    border: 2px solid var(--pitaya-primary);
+    border-radius: var(--radius-md);
+    padding: 9px 22px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.btn-pitaya-outline:hover {
+    background-color: var(--pitaya-primary);
+    color: var(--pitaya-white);
+    transform: translateY(-1px);
+}
+
+/* ─── Formularios ────────────────────────────────────────────── */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--pitaya-primary);
+    box-shadow: 0 0 0 3px rgba(81, 184, 172, 0.15);
+    outline: none;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--pitaya-secondary);
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+}
+
+/* ─── Alertas y Mensajes ─────────────────────────────────────── */
+.alert-pitaya-info {
+    background-color: rgba(81, 184, 172, 0.1);
+    border: 1px solid rgba(81, 184, 172, 0.4);
+    border-left: 4px solid var(--pitaya-primary);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    color: var(--pitaya-secondary);
+    font-size: 0.9rem;
+}
+
+.alert-pitaya-warning {
+    background-color: #fff8e1;
+    border: 1px solid #ffe082;
+    border-left: 4px solid #f59e0b;
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    color: #7c5a00;
+    font-size: 0.9rem;
+}
+
+.alert-pitaya-warning .alert-icon {
+    font-size: 1.3rem;
+    color: #f59e0b;
+}
+
+/* ─── Tabla de historial de compras ─────────────────────────── */
+.club-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.club-table thead th {
+    background-color: var(--pitaya-secondary);
+    color: var(--pitaya-white);
+    padding: 10px 14px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.club-table thead th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+.club-table thead th:last-child  { border-radius: 0 var(--radius-sm) 0 0; }
+
+.club-table tbody tr {
+    border-bottom: 1px solid var(--pitaya-border);
+    transition: background-color 0.15s ease;
+}
+
+.club-table tbody tr:hover { background-color: rgba(81,184,172,0.05); }
+
+.club-table tbody td {
+    padding: 9px 14px;
+    color: var(--pitaya-text);
+    vertical-align: middle;
+}
+
+/* ─── Badge de tipo de producto ─────────────────────────────── */
+.badge-tipo {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: rgba(81, 184, 172, 0.15);
+    color: var(--pitaya-secondary);
+}
+
+/* ─── Pie de página ──────────────────────────────────────────── */
+.club-footer {
+    background-color: var(--pitaya-secondary);
+    color: rgba(255,255,255,0.65);
+    text-align: center;
+    padding: 16px;
+    font-size: 0.8rem;
+    margin-top: 40px;
+}
+
+.club-footer a {
+    color: var(--pitaya-primary);
+    text-decoration: none;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .club-card  { padding: 16px; }
+    .club-stat  { padding: 14px 16px; }
+    .stat-value { font-size: 1.5rem !important; }
+    .club-table { font-size: 0.8rem; }
+    .club-table td, .club-table th { padding: 7px 8px; }
+}
