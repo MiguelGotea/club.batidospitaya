@@ -1,15 +1,23 @@
 <?php
-// ai_nutrition_api.php - API de análisis nutricional con IA
-session_start();
+/**
+ * ai_nutrition_api.php — API de análisis nutricional con IA
+ * Portal de Miembros Club Batidos Pitaya
+ *
+ * Usa AIService del Core Ligero para rotación automática de keys y soporte
+ * multi-proveedor (Groq, OpenAI, DeepSeek, etc.)
+ *
+ * Respuesta JSON: { success, analysis, hasAI, productos_analizados }
+ */
+
+// ⚠️ LiteSpeed Hostinger: session_start() antes de cualquier require
+if (session_status() === PHP_SESSION_NONE) session_start();
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: https://club.batidospitaya.com');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Manejar preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit(0); }
 
 // Verificar sesión — acepta key nueva (club_logged_in) y vieja (logged_in)
 $autenticado = ($_SESSION['club_logged_in'] ?? false) || ($_SESSION['logged_in'] ?? false);
@@ -25,6 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
+// Conexión DB y Core AI
+require_once __DIR__ . '/core/database/conexion.php'; // $conn PDO
+require_once __DIR__ . '/core/ai/AIService.php';
+
+// Input
 $input = json_decode(file_get_contents('php://input'), true);
 $productos_con_ingredientes = $input['productos_con_ingredientes'] ?? [];
 
@@ -33,264 +46,150 @@ if (empty($productos_con_ingredientes)) {
     exit();
 }
 
-// Configuración de APIs — la key se carga desde variables de entorno del servidor
-$groq_api_key = $_ENV['GROQ_API_KEY'] ?? '';
-
-$apis_config = [
-    'groq' => [
-        'endpoint' => 'https://api.groq.com/openai/v1/chat/completions',
-        'api_key' => $groq_api_key,
-        'models' => [
-            'llama-3.1-8b-instant',
-            'gemma2-9b-it'
-        ],
-        'active' => !empty($groq_api_key)
-    ]
-];
-
+// --- Análisis ---
 try {
+    $ai     = new AIService($conn, 'groq');
+    $hasAI  = $ai->hasAvailableKeys();
     $analisis = null;
 
-    // Intentar análisis con IA real
-    if ($apis_config['groq']['active']) {
-        $analisis = callGroqAPIWithFallback($productos_con_ingredientes, $apis_config['groq']);
+    if ($hasAI) {
+        $analisis = analizarConIA($ai, $productos_con_ingredientes);
     }
 
-    // Si no hay IA disponible, usar análisis básico
     if (!$analisis) {
-        $analisis = generateAdvancedBasicAnalysis($productos_con_ingredientes);
+        $hasAI    = false;
+        $analisis = fallbackEstatico($productos_con_ingredientes);
     }
 
     echo json_encode([
-        'success' => true,
-        'analysis' => $analisis,
-        'hasAI' => $apis_config['groq']['active'] && $analisis !== null,
-        'productos_analizados' => count($productos_con_ingredientes)
+        'success'              => true,
+        'analysis'             => $analisis,
+        'hasAI'                => $hasAI,
+        'productos_analizados' => count($productos_con_ingredientes),
     ]);
 
 } catch (Exception $e) {
-    error_log("Error en AI API: " . $e->getMessage());
-
-    $analisis_fallback = generateAdvancedBasicAnalysis($productos_con_ingredientes);
-
+    error_log('Error en ai_nutrition_api: ' . $e->getMessage());
     echo json_encode([
-        'success' => true,
-        'analysis' => $analisis_fallback,
+        'success'  => true,
+        'analysis' => fallbackEstatico($productos_con_ingredientes),
+        'hasAI'    => false,
         'fallback' => true,
-        'hasAI' => false
     ]);
 }
 
-function callGroqAPIWithFallback($productos_con_ingredientes, $config)
+// ---------------------------------------------------------------------------
+// Funciones de análisis
+// ---------------------------------------------------------------------------
+
+/**
+ * Llama AIService por cada producto y concatena los bloques HTML de respuesta.
+ */
+function analizarConIA(AIService $ai, array $productos): ?string
 {
-    $prompts = createProductPrompts($productos_con_ingredientes);
+    $systemPrompt = 'Eres un nutricionista experto en batidos y alimentos saludables. '
+        . 'Proporciona información científica precisa sin listar ingredientes; '
+        . 'enfócate en beneficios generales del producto. '
+        . 'Responde en español con el siguiente formato EXACTO (sin asteriscos):'
+        . "\n\nBeneficios principales:\n• Punto 1\n• Punto 2\n• Punto 3"
+        . "\n\nValor nutricional:\nTexto descriptivo..."
+        . "\n\nRecomendaciones:\n• Recomendación 1\n• Recomendación 2"
+        . "\n\nConsideraciones:\n• Consideración 1 si aplica"
+        . "\n\nMáximo 300 palabras. Sé específico y científico.";
 
-    foreach ($config['models'] as $model) {
-        try {
-            $analisis_completo = '';
+    $analisisCompleto = '';
 
-            foreach ($prompts as $prompt_data) {
-                $response = callSingleGroqAPI($prompt_data['prompt'], $config['api_key'], $model);
-                $analisis_completo .= "<div class='producto-analysis'>";
-                $analisis_completo .= "<h4>🥤 " . $prompt_data['producto_nombre'] . "</h4>";
-                $analisis_completo .= $response;
-                $analisis_completo .= "</div><br>";
-            }
-
-            return $analisis_completo;
-
-        } catch (Exception $e) {
-            error_log("Error con modelo $model: " . $e->getMessage());
-            continue;
-        }
-    }
-
-    throw new Exception('Todos los modelos de Groq fallaron');
-}
-
-function callSingleGroqAPI($prompt, $api_key, $model)
-{
-    $context = "Eres un nutricionista experto especializado en batidos saludables y análisis nutricional. Proporciona información científica precisa sin listar ingredientes, enfócate en beneficios generales del producto.";
-
-    $data = [
-        'messages' => [
-            ['role' => 'system', 'content' => $context],
-            ['role' => 'user', 'content' => $prompt]
-        ],
-        'model' => $model,
-        'max_tokens' => 600,
-        'temperature' => 0.7
-    ];
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://api.groq.com/openai/v1/chat/completions');
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . $api_key
-    ]);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($response === false) {
-        throw new Exception('Error de conexión con Groq API');
-    }
-
-    if ($http_code !== 200) {
-        throw new Exception("Error HTTP $http_code");
-    }
-
-    $result = json_decode($response, true);
-
-    if (isset($result['choices'][0]['message']['content'])) {
-        return formatAIResponse($result['choices'][0]['message']['content']);
-    }
-
-    throw new Exception('Respuesta inválida de Groq API');
-}
-
-function createProductPrompts($productos_con_ingredientes)
-{
-    $prompts = [];
-
-    foreach ($productos_con_ingredientes as $item) {
-        $producto = $item['producto'];
-        $ingredientes = array_column($item['ingredientes'], 'ingrediente');
-
-        if (empty($ingredientes)) {
-            continue;
-        }
-
-        $ingredientes_texto = implode(', ', $ingredientes);
-
-        $prompt = "Analiza el valor nutricional y beneficios de salud del producto '{$producto['DBBatidos_Nombre']}' que contiene los siguientes ingredientes: {$ingredientes_texto}.
-
-POR FAVOR USA ESTE FORMATO EXACTO SIN **:
-
-Beneficios principales:
-• Punto 1
-• Punto 2
-• Punto 3
-
-Valor nutricional:
-Texto descriptivo aquí...
-
-Recomendaciones:
-• Recomendación 1
-• Recomendación 2
-
-Consideraciones:
-• Consideración 1 si aplica
-
-Máximo 300 palabras. Sé específico y científico.";
-
-        $prompts[] = [
-            'prompt' => $prompt,
-            'producto_nombre' => $producto['DBBatidos_Nombre']
-        ];
-    }
-
-    return $prompts;
-}
-
-function generateAdvancedBasicAnalysis($productos_con_ingredientes)
-{
-    $beneficios_db = [
-        'Mango' => ['Vitamina C', 'Antioxidantes', 'Digestión', 'Sistema inmune'],
-        'Fresa' => ['Vitamina C', 'Folato', 'Antioxidantes', 'Control de peso'],
-        'Plátano' => ['Potasio', 'Energía', 'Estado de ánimo', 'Rendimiento'],
-        'Papaya' => ['Papaína', 'Digestión', 'Antiinflamatorio', 'Vitamina A'],
-        'Pitaya' => ['Antioxidantes', 'Fibra', 'Hierro', 'Detox'],
-        'Leche' => ['Calcio', 'Proteínas', 'Huesos', 'Recuperación'],
-        'Yogurt' => ['Probióticos', 'Digestión', 'Proteínas', 'Inmunidad'],
-        'Avena' => ['Fibra', 'Saciedad', 'Energía', 'Colesterol'],
-        'Miel' => ['Energía', 'Antioxidantes', 'Antibacteriano', 'Natural']
-    ];
-
-    $analisis_completo = '';
-
-    foreach ($productos_con_ingredientes as $item) {
-        $producto = $item['producto'];
+    foreach ($productos as $item) {
+        $producto     = $item['producto'];
         $ingredientes = $item['ingredientes'];
 
-        if (empty($ingredientes)) {
-            continue;
+        if (empty($ingredientes)) continue;
+
+        $lista = implode(', ', array_column($ingredientes, 'ingrediente'));
+        $userPrompt = "Analiza el batido '{$producto['DBBatidos_Nombre']}' "
+            . "que contiene los siguientes ingredientes: {$lista}.";
+
+        try {
+            $respuesta = $ai->procesarPrompt($systemPrompt, $userPrompt);
+            $analisisCompleto .= "<div class='producto-analysis'>"
+                . "<h4>🥤 " . htmlspecialchars($producto['DBBatidos_Nombre']) . "</h4>"
+                . formatearRespuesta($respuesta)
+                . "</div><br>";
+        } catch (Exception $e) {
+            error_log('AIService error para ' . $producto['DBBatidos_Nombre'] . ': ' . $e->getMessage());
         }
+    }
 
-        $beneficios_producto = [];
+    return $analisisCompleto ?: null;
+}
 
+/**
+ * Convierte markdown básico a HTML limpio para mostrar en el dashboard.
+ */
+function formatearRespuesta(string $texto): string
+{
+    $texto = trim($texto);
+    // **negrita** → <strong>
+    $texto = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $texto);
+    // listas con - o * o números → bullets
+    $texto = preg_replace('/^[\-\*]\s+/m', '• ', $texto);
+    $texto = preg_replace('/^\d+\.\s+/m', '• ', $texto);
+    return nl2br($texto);
+}
+
+/**
+ * Análisis estático cuando no hay keys de IA disponibles.
+ * Mantiene la misma estructura HTML que el análisis con IA.
+ */
+function fallbackEstatico(array $productos): string
+{
+    $beneficiosPorIngrediente = [
+        'Mango'   => ['Vitamina C', 'Antioxidantes', 'Digestión', 'Sistema inmune'],
+        'Fresa'   => ['Vitamina C', 'Folato', 'Antioxidantes', 'Control de peso'],
+        'Plátano' => ['Potasio', 'Energía', 'Estado de ánimo', 'Rendimiento'],
+        'Papaya'  => ['Papaína', 'Digestión', 'Antiinflamatorio', 'Vitamina A'],
+        'Pitaya'  => ['Antioxidantes', 'Fibra', 'Hierro', 'Detox'],
+        'Leche'   => ['Calcio', 'Proteínas', 'Huesos', 'Recuperación'],
+        'Yogurt'  => ['Probióticos', 'Digestión', 'Proteínas', 'Inmunidad'],
+        'Avena'   => ['Fibra', 'Saciedad', 'Energía', 'Colesterol'],
+        'Miel'    => ['Energía', 'Antioxidantes', 'Antibacteriano', 'Natural'],
+    ];
+
+    $html = '';
+
+    foreach ($productos as $item) {
+        $producto     = $item['producto'];
+        $ingredientes = $item['ingredientes'];
+
+        if (empty($ingredientes)) continue;
+
+        $nutrientes = [];
         foreach ($ingredientes as $ing) {
-            $nombre_ingrediente = $ing['ingrediente'];
-            if (isset($beneficios_db[$nombre_ingrediente])) {
-                $beneficios_producto = array_merge($beneficios_producto, $beneficios_db[$nombre_ingrediente]);
+            if (isset($beneficiosPorIngrediente[$ing['ingrediente']])) {
+                $nutrientes = array_merge($nutrientes, $beneficiosPorIngrediente[$ing['ingrediente']]);
             }
         }
+        $nutrientes = array_slice(array_unique($nutrientes), 0, 4);
+        $nutrientesTexto = $nutrientes ? implode(', ', $nutrientes) : 'vitaminas y minerales esenciales';
 
-        $beneficios_unicos = array_unique($beneficios_producto);
-        $nutrientes_principales = array_slice($beneficios_unicos, 0, 4);
-
-        $analisis_completo .= "<div class='producto-analysis'>";
-        $analisis_completo .= "<h4>🥤 " . htmlspecialchars($producto['DBBatidos_Nombre']) . "</h4>";
-        $analisis_completo .= "<strong>Beneficios principales:</strong><br>";
-        $analisis_completo .= "• Combinación rica en antioxidantes que protegen contra el daño celular<br>";
-        $analisis_completo .= "• Aporta vitaminas esenciales que fortalecen el sistema inmunológico<br>";
-        $analisis_completo .= "• Proporciona energía natural y nutrientes para el bienestar diario<br>";
-        $analisis_completo .= "• Ingredientes que favorecen la digestión y absorción de nutrientes<br><br>";
-        $analisis_completo .= "<strong>Valor nutricional:</strong><br>";
-        $analisis_completo .= "Este producto aporta: " . implode(', ', $nutrientes_principales) . " y otros nutrientes esenciales para el organismo.<br><br>";
-        $analisis_completo .= "<strong>Recomendaciones:</strong><br>";
-        $analisis_completo .= "• Ideal para consumir en la mañana o como merienda saludable<br>";
-        $analisis_completo .= "• Perfecto después del ejercicio para recuperación<br>";
-        $analisis_completo .= "• Acompaña con abundante agua durante el día<br><br>";
-        $analisis_completo .= "<strong>Consideraciones:</strong><br>";
-        $analisis_completo .= "• Forma parte de una dieta balanceada y variada<br>";
-        $analisis_completo .= "• Si tienes condiciones médicas específicas, consulta con tu médico<br>";
-        $analisis_completo .= "</div><br>";
+        $html .= "<div class='producto-analysis'>"
+            . "<h4>🥤 " . htmlspecialchars($producto['DBBatidos_Nombre']) . "</h4>"
+            . "<strong>Beneficios principales:</strong><br>"
+            . "• Combinación rica en antioxidantes que protegen contra el daño celular<br>"
+            . "• Aporta vitaminas esenciales que fortalecen el sistema inmunológico<br>"
+            . "• Proporciona energía natural y nutrientes para el bienestar diario<br>"
+            . "• Ingredientes que favorecen la digestión y absorción de nutrientes<br><br>"
+            . "<strong>Valor nutricional:</strong><br>"
+            . "Este producto aporta: {$nutrientesTexto} y otros nutrientes esenciales.<br><br>"
+            . "<strong>Recomendaciones:</strong><br>"
+            . "• Ideal para consumir en la mañana o como merienda saludable<br>"
+            . "• Perfecto después del ejercicio para recuperación<br>"
+            . "• Acompaña con abundante agua durante el día<br><br>"
+            . "<strong>Consideraciones:</strong><br>"
+            . "• Forma parte de una dieta balanceada y variada<br>"
+            . "• Si tienes condiciones médicas específicas, consulta con tu médico<br>"
+            . "</div><br>";
     }
 
-    return $analisis_completo;
+    return $html;
 }
-
-function formatAIResponse($text)
-{
-    $text = trim($text);
-    $text = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $text);
-
-    $lines = explode("\n", $text);
-    $formatted_lines = [];
-
-    foreach ($lines as $line) {
-        $trimmed_line = trim($line);
-
-        if (
-            preg_match('/^<strong>.*<\/strong>:$/', $trimmed_line) ||
-            preg_match('/^<strong>.*<\/strong>$/', $trimmed_line)
-        ) {
-            $formatted_lines[] = $trimmed_line;
-            continue;
-        }
-
-        if (preg_match('/^\d+\.\s+(.+)$/', $trimmed_line, $matches)) {
-            $formatted_lines[] = '• ' . $matches[1];
-            continue;
-        }
-
-        if (preg_match('/^[-*]\s+(.+)$/', $trimmed_line, $matches)) {
-            $formatted_lines[] = '• ' . $matches[1];
-            continue;
-        }
-
-        $formatted_lines[] = $trimmed_line;
-    }
-
-    $text = implode("\n", $formatted_lines);
-    $text = nl2br($text);
-
-    return $text;
-}
-?>

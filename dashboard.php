@@ -187,24 +187,6 @@ try {
         }
     }
 
-    // Debug: Información de ingredientes para diagnosticar
-    // TAMBIÉN EXCLUIR los ingredientes específicos en el debug
-    $debug_ingredientes = [];
-    if (!empty($productos_usuario)) {
-        $placeholders = str_repeat('?,', count($productos_usuario) - 1) . '?';
-        $query_debug = "SELECT b.Nombre as batido, i.Nombre as ingrediente, sr.Cantidad, i.Cocina, i.CodIngrediente
-                       FROM DBBatidos b
-                       LEFT JOIN SubReceta sr ON b.CodBatido = sr.CodBatido
-                       LEFT JOIN DBIngredientes i ON sr.CodIngrediente = i.CodIngrediente
-                       WHERE b.CodBatido IN ($placeholders)
-                       AND (i.CodIngrediente IS NULL OR i.CodIngrediente NOT IN ('B001', 'B004', 'E004')) -- EXCLUIR EN DEBUG TAMBIÉN
-                       ORDER BY b.Nombre, i.Nombre
-                       LIMIT 50";
-        
-        $stmt_debug = $db->prepare($query_debug);
-        $stmt_debug->execute($productos_usuario);
-        $debug_ingredientes = $stmt_debug->fetchAll(PDO::FETCH_ASSOC);
-    }
 } catch(Exception $e) {
     // En caso de error, mostrar valores por defecto
     $compras = [];
@@ -215,7 +197,6 @@ try {
     $top_ingredientes = [];
     $top_productos_detalle = [];
     $productos_con_ingredientes = [];
-    $debug_ingredientes = [];
     error_log("Error en dashboard: " . $e->getMessage());
 }
 ?>
@@ -733,49 +714,6 @@ try {
             }
         `;
         document.head.appendChild(notificationStyles);
-
-        // Función de debug para verificar ingredientes
-        function showDebugInfo() {
-            const debugContent = document.getElementById('debug-content');
-            const debugData = <?php echo json_encode($debug_ingredientes); ?>;
-            const productosUsuario = <?php echo json_encode($productos_usuario); ?>;
-            
-            let debugHTML = '<h3>🔍 Información de Debug</h3>';
-            debugHTML += `<p><strong>Productos del usuario encontrados:</strong> ${productosUsuario.length}</p>`;
-            debugHTML += `<p><strong>Códigos de productos:</strong> ${productosUsuario.join(', ')}</p>`;
-            debugHTML += `<p><strong>Registros de ingredientes:</strong> ${debugData.length}</p>`;
-            
-            if (debugData.length > 0) {
-                debugHTML += '<h4>Ingredientes por producto:</h4>';
-                debugHTML += '<div style="max-height: 300px; overflow-y: auto;">';
-                
-                const groupedByBatido = {};
-                debugData.forEach(item => {
-                    if (!groupedByBatido[item.batido]) {
-                        groupedByBatido[item.batido] = [];
-                    }
-                    groupedByBatido[item.batido].push(item);
-                });
-                
-                for (const [batido, ingredientes] of Object.entries(groupedByBatido)) {
-                    debugHTML += `
-                        <div style="background: rgba(255,255,255,0.05); padding: 10px; margin: 10px 0; border-radius: 8px;">
-                            <strong>${batido}</strong><br>
-                            ${ingredientes.map(ing => 
-                                ing.ingrediente ? `• ${ing.ingrediente} (${ing.Cantidad || 'N/A'})` : '• Sin ingredientes registrados'
-                            ).join('<br>')}
-                        </div>
-                    `;
-                }
-                debugHTML += '</div>';
-            } else {
-                debugHTML += '<p style="color: #FFE066;"><strong>❌ No se encontraron ingredientes registrados</strong></p>';
-                debugHTML += '<p>Esto significa que los productos en SubReceta no están conectados con DBIngredientes.</p>';
-            }
-            
-            debugContent.innerHTML = debugHTML;
-            debugContent.style.display = 'block';
-        }
 
         // Modal functions para ingredientes
         function showIngredientInfo(ingredient) {
