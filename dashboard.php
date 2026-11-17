@@ -1,20 +1,27 @@
 <?php
-// dashboard.php - Dashboard básico sin consultas complejas
-session_start();
+// dashboard.php - Dashboard Portal Club Pitaya
+// Compatibilidad: acepta sesiones del login nuevo (club_*) y del viejo (logged_in)
 
-if (!($_SESSION['logged_in'] ?? false)) {
+require_once __DIR__ . '/core/database/conexion.php'; // $conn PDO
+
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+// Soporte para key nueva (club_logged_in) y key vieja (logged_in)
+$esta_logueado = ($_SESSION['club_logged_in'] ?? false)
+              || ($_SESSION['logged_in']      ?? false);
+
+if (!$esta_logueado) {
     header("Location: login.php");
     exit();
 }
 
-require_once 'config.php';
+// Leer datos de sesión — soporta ambos esquemas de keys
+$membresia = $_SESSION['club_membresia'] ?? $_SESSION['membresia'] ?? '';
+$nombre    = $_SESSION['club_nombre']    ?? $_SESSION['nombre']    ?? '';
+$apellido  = $_SESSION['club_apellido'] ?? $_SESSION['apellido']  ?? '';
 
-$database = new Database();
-$db = $database->getConnection();
-
-$membresia = $_SESSION['membresia'];
-$nombre = $_SESSION['nombre'];
-$apellido = $_SESSION['apellido'];
+// Alias para compatibilidad con el resto del dashboard (usa $db->prepare())
+$db = $conn;
 
 // Solo consultas básicas sin JOINs complejos
 try {
