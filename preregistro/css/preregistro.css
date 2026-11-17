@@ -1,0 +1,110 @@
+/* ============================================================
+   preregistro/css/preregistro.css
+   Club Pitaya — Formulario de Preregistro Público
+   Paleta: verde #0E544C, verde claro #1a7a6e
+   Mobile-first
+   ============================================================ */
+
+/* ── Reset & base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f4faf8;
+    color: #1a1a2e;
+    margin: 0;
+    min-height: 100vh;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.preregistro-header {
+    background: linear-gradient(135deg, #0E544C 0%, #1a7a6e 100%);
+    box-shadow: 0 2px 12px rgba(0,0,0,.18);
+}
+
+/* ── Card principal ───────────────────────────────────────── */
+.preregistro-card {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 24px rgba(14,84,76,.12) !important;
+}
+
+.card-header-preregistro {
+    background: linear-gradient(135deg, #0E544C 0%, #1a7a6e 100%);
+    padding: 1.25rem 1.5rem;
+}
+
+/* ── Zona de upload ───────────────────────────────────────── */
+.zona-upload {
+    border: 2.5px dashed #1a7a6e;
+    border-radius: 12px;
+    background: #f0fdf4;
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+    min-height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.zona-upload:hover, .zona-upload.drag-over {
+    background: #dcfce7;
+    border-color: #0E544C;
+}
+
+/* ── Campos readonly ──────────────────────────────────────── */
+.campo-readonly {
+    background: #f8f9fa;
+    border: 1.5px solid #dee2e6;
+    border-radius: 8px;
+    padding: .55rem .85rem;
+    font-weight: 600;
+    font-size: .95rem;
+    color: #374151;
+    min-height: 2.6rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.campo-readonly::before {
+    content: '🔒';
+    font-size: .75rem;
+    opacity: .5;
+}
+
+/* ── Botones ──────────────────────────────────────────────── */
+.btn-success {
+    background: #0E544C !important;
+    border-color: #0E544C !important;
+    font-weight: 600;
+    letter-spacing: .3px;
+    border-radius: 10px !important;
+    padding: .75rem 1.25rem !important;
+}
+.btn-success:hover, .btn-success:focus {
+    background: #1a7a6e !important;
+    border-color: #1a7a6e !important;
+}
+.btn-link { text-decoration: none; }
+.btn-link:hover { text-decoration: underline; }
+
+/* ── Spinner de carga ─────────────────────────────────────── */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: .15em;
+}
+
+/* ── Alertas ──────────────────────────────────────────────── */
+.alert-danger {
+    border-radius: 10px;
+    border-left: 4px solid #dc3545;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .preregistro-header .container { padding: .75rem 1rem; }
+    .card-header-preregistro { padding: 1rem 1.25rem; }
+    .card-body { padding: 1.25rem !important; }
+    .zona-upload { padding: 1.5rem .75rem; }
+}
