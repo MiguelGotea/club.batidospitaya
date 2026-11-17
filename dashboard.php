@@ -579,28 +579,29 @@ try {
                 const aiData = await aiResponse.json();
 
                 if (aiData.success) {
-                    // Agregar el análisis de IA al contenido existente
-                    analysisHTML += `
-                        <div class="ai-analysis-section">
-                            <div class="ai-header">
-                                <h4>🤖 Análisis Nutricional ${aiData.hasAI ? 'con IA Avanzada' : 'Básico'}</h4>
-                                ${aiData.hasAI ?
-                            '<div class="ai-badge success">✅ Powered by llama-3.1-8b-instant</div>' :
-                            '<div class="ai-badge basic">📊 Análisis básico (configurar API para IA avanzada)</div>'
-                        }
-                            </div>
-                            <div class="filter-info" style="background: rgba(255,193,7,0.1); padding: 10px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #FFC107;">
-                                <strong>🔍 Filtro aplicado:</strong> Ingredientes B001, B004, E004 excluidos del análisis
-                            </div>
-                            <div class="analysis-content">
-                                ${aiData.analysis}
-                            </div>
-                        </div>
-                    `;
+                    // Construir sección de análisis sin template literals anidados
+                    const badgeHTML = aiData.hasAI
+                        ? '<div class="ai-badge success">✅ Powered by ' + (aiData.proveedor || 'IA') + '</div>'
+                        : '<div class="ai-badge basic">📊 Análisis básico (configurar API para IA avanzada)</div>';
+
+                    analysisHTML += '<div class="ai-analysis-section">'
+                        + '<div class="ai-header">'
+                        +   '<h4>🤖 Análisis Nutricional ' + (aiData.hasAI ? 'con IA Avanzada' : 'Básico') + '</h4>'
+                        +   badgeHTML
+                        + '</div>'
+                        + '<div class="filter-info" style="background:rgba(255,193,7,0.1);padding:10px;border-radius:8px;margin-bottom:15px;border-left:4px solid #FFC107;">'
+                        +   '<strong>🔍 Filtro aplicado:</strong> Ingredientes B001, B004, E004 excluidos del análisis'
+                        + '</div>'
+                        + '<div class="analysis-content"></div>'
+                        + '</div>';
+
+                    // Insertar primero el wrapper, luego inyectar analysis como innerHTML separado
+                    content.innerHTML = analysisHTML;
+                    content.querySelector('.analysis-content').innerHTML = aiData.analysis;
 
                     // Mostrar notificación de éxito
                     if (aiData.hasAI) {
-                        showNotification('✅ Análisis generado con IA moderna (ingredientes excluidos)', 'success');
+                        showNotification('✅ Análisis generado con IA moderna', 'success');
                     } else {
                         showNotification('📊 Análisis básico generado (IA no configurada)', 'info');
                     }
@@ -608,7 +609,6 @@ try {
                     throw new Error(aiData.error || 'Error desconocido en análisis');
                 }
 
-                content.innerHTML = analysisHTML;
                 btnText.innerHTML = '🔄 Actualizar Análisis';
                 button.disabled = false;
 
@@ -738,7 +738,9 @@ try {
                 flex-wrap: wrap;
             }
             .analysis-content {
-                line-height: 1.6;
+                line-height: 1.8;
+                white-space: normal;
+                word-break: break-word;
             }
             .producto-analysis {
                 background: rgba(255,255,255,0.08);
@@ -746,6 +748,12 @@ try {
                 border-radius: 12px;
                 margin: 15px 0;
                 border-left: 4px solid #4ECDC4;
+                overflow: visible;
+            }
+            .producto-analysis h4 {
+                margin-bottom: 14px;
+                color: #fff;
+                font-size: 1.1rem;
             }
             .no-analysis, .error-analysis {
                 text-align: center;
