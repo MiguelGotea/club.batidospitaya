@@ -17,6 +17,7 @@ if (!$esta_logueado) {
     exit();
 }
 
+
 // Leer datos de sesión — soporta ambos esquemas de keys
 $membresia = $_SESSION['club_membresia'] ?? $_SESSION['membresia'] ?? '';
 $nombre = $_SESSION['club_nombre'] ?? $_SESSION['nombre'] ?? '';
@@ -586,11 +587,11 @@ try {
 
                     analysisHTML += '<div class="ai-analysis-section">'
                         + '<div class="ai-header">'
-                        +   '<h4>🤖 Análisis Nutricional ' + (aiData.hasAI ? 'con IA Avanzada' : 'Básico') + '</h4>'
-                        +   badgeHTML
+                        + '<h4>🤖 Análisis Nutricional ' + (aiData.hasAI ? 'con IA Avanzada' : 'Básico') + '</h4>'
+                        + badgeHTML
                         + '</div>'
                         + '<div class="filter-info" style="background:rgba(255,193,7,0.1);padding:10px;border-radius:8px;margin-bottom:15px;border-left:4px solid #FFC107;">'
-                        +   '<strong>🔍 Filtro aplicado:</strong> Ingredientes B001, B004, E004 excluidos del análisis'
+                        + '<strong>🔍 Filtro aplicado:</strong> Ingredientes B001, B004, E004 excluidos del análisis'
                         + '</div>'
                         + '<div class="analysis-content"></div>'
                         + '</div>';
