@@ -321,3 +321,198 @@ body {
     .club-table { font-size: 0.8rem; }
     .club-table td, .club-table th { padding: 7px 8px; }
 }
+
+
+/* ─── Dashboard: Componentes específicos ─────────────────────── */
+
+/* Contenedor principal */
+.dashboard-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+/* Hero de puntos */
+.points-hero {
+    background: var(--pitaya-secondary);
+    color: #fff;
+    padding: 48px 40px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-medium);
+}
+.points-number {
+    font-size: 4rem;
+    font-weight: 700;
+    margin: 16px 0;
+    letter-spacing: -1px;
+}
+.points-label {
+    font-size: 1.1rem;
+    opacity: 0.88;
+}
+
+/* Tarjetas de estadísticas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+}
+.stat-card {
+    background: var(--pitaya-white);
+    padding: 28px 20px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+}
+.stat-icon  { font-size: 2.4rem; margin-bottom: 10px; }
+.stat-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--pitaya-secondary);
+    margin-bottom: 6px;
+}
+.stat-label { color: var(--pitaya-muted); font-size: 0.95rem; font-weight: 600; }
+
+/* Secciones de contenido */
+.section {
+    background: var(--pitaya-white);
+    border-radius: var(--radius-md);
+    padding: 28px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 24px;
+}
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--pitaya-secondary);
+    margin-bottom: 20px;
+}
+
+/* Tabla de compras */
+.purchases-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+.purchases-table th,
+.purchases-table td {
+    padding: 13px 14px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+.purchases-table th {
+    background: var(--pitaya-light);
+    font-weight: 700;
+    color: var(--pitaya-secondary);
+    white-space: nowrap;
+}
+.purchases-table tr:hover { background: rgba(81,184,172,0.04); }
+
+/* Badge de puntos en tabla */
+.points-badge {
+    background: var(--pitaya-secondary);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Sin datos */
+.no-data {
+    text-align: center;
+    color: var(--pitaya-muted);
+    font-style: italic;
+    padding: 36px;
+    background: var(--pitaya-light);
+    border-radius: var(--radius-md);
+}
+
+/* Favoritos / ingredientes */
+.favorites-grid  { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.favorite-item {
+    background: var(--pitaya-light);
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    transition: background 0.2s, transform 0.2s;
+}
+.favorite-item:hover { background: #e3eceb; transform: translateX(4px); }
+
+/* Análisis de salud / AI */
+.health-analysis-content h3 { margin-bottom: 12px; color: #fff; }
+.health-analysis-content h4 { margin: 12px 0 8px; color: rgba(255,255,255,0.9); }
+.ingredient-card {
+    background: rgba(255,255,255,0.1);
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    margin: 8px 0;
+    border-left: 4px solid rgba(255,255,255,0.4);
+}
+.benefit-list  { margin: 8px 0; }
+.benefit-item  { margin: 4px 0; padding-left: 16px; position: relative; }
+.benefit-item::before { content:"✓"; position:absolute; left:0; color:#51B8AC; font-weight:700; }
+
+/* Spinner de carga IA */
+.loading-spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Modal genérico */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+}
+.modal-overlay.show { display: flex; }
+.modal-content {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    max-width: 600px;
+    width: calc(100% - 40px);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eee;
+}
+.modal-close {
+    background: none; border: none;
+    font-size: 22px; cursor: pointer; color: #888;
+}
+.modal-close:hover { color: #333; }
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .points-hero  { padding: 32px 20px; }
+    .points-number { font-size: 2.8rem; }
+    .purchases-table th,
+    .purchases-table td { padding: 9px 10px; font-size: 0.82rem; }
+    .section { padding: 18px; }
+}

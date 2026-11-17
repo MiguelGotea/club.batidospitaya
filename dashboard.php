@@ -225,367 +225,26 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Miembros - Batidos Pitaya</title>
-    <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Mi Portal — Club Batidos Pitaya</title>
+
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- CSS corporativo -->
+    <link rel="stylesheet" href="css/club_global.css">
+
     <style>
-        :root {
-            --pitaya-primary: #51B8AC;
-            --pitaya-secondary: #0E544C;
-            --pitaya-light: #F6F6F6;
-            --pitaya-white: #FFFFFF;
-            --pitaya-gradient: linear-gradient(135deg, #51B8AC 0%, #0E544C 100%);
-            --shadow-soft: 0 4px 20px rgba(81, 184, 172, 0.1);
-            --shadow-medium: 0 8px 30px rgba(14, 84, 76, 0.15);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Calibri', Arial, sans-serif;
-            background: var(--pitaya-light);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
-        .header {
-            background: var(--pitaya-gradient);
-            color: var(--pitaya-white);
-            padding: 20px 0;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-weight: 700;
-            font-size: 2rem;
-        }
-
-        .logo {
-            width: 60px;
-            height: 60px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
-        }
-
-        .logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .user-info {
-            text-align: right;
-        }
-
-        .logout-btn {
-            background: rgba(255,255,255,0.2);
-            color: var(--pitaya-white);
-            border: 2px solid rgba(255,255,255,0.3);
-            padding: 8px 20px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        .points-hero {
-            background: linear-gradient(135deg, #FF6B6B, #FFE066);
-            color: var(--pitaya-white);
-            padding: 50px 40px;
-            border-radius: 20px;
-            text-align: center;
-            margin-bottom: 40px;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .points-number {
-            font-size: 4rem;
-            font-weight: 700;
-            margin: 20px 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .points-label {
-            font-size: 1.3rem;
-            opacity: 0.95;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .stat-card {
-            background: var(--pitaya-white);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: var(--shadow-soft);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .stat-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--pitaya-secondary);
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .section {
-            background: var(--pitaya-white);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: var(--shadow-soft);
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--pitaya-secondary);
-            margin-bottom: 25px;
-        }
-
-        .purchases-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .purchases-table th,
-        .purchases-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .purchases-table th {
-            background: var(--pitaya-light);
-            font-weight: 700;
-            color: var(--pitaya-secondary);
-        }
-
-        .purchases-table tr:hover {
-            background: rgba(81, 184, 172, 0.05);
-        }
-
-        .points-badge {
-            background: var(--pitaya-gradient);
-            color: var(--pitaya-white);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .no-data {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-            padding: 40px;
-            background: var(--pitaya-light);
-            border-radius: 15px;
-        }
-
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #28a745;
-        }
-
-        .favorites-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-
-        .favorite-item {
-            background: var(--pitaya-light);
-            padding: 15px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .favorite-item:hover {
-            background: #e8e8e8;
-            transform: translateX(5px);
-        }
-
-        .ingredient-detail-btn:hover {
-            background: var(--pitaya-secondary) !important;
-            transform: translateY(-2px);
-        }
-
-        .health-analysis-content h3 {
-            margin-bottom: 15px;
-            color: white;
-        }
-
-        .health-analysis-content h4 {
-            margin: 15px 0 10px 0;
-            color: rgba(255,255,255,0.9);
-        }
-
-        .ingredient-card {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
-            border-left: 4px solid rgba(255,255,255,0.5);
-        }
-
-        .benefit-list {
-            margin: 10px 0;
-        }
-
-        .benefit-item {
-            margin: 5px 0;
-            padding-left: 15px;
-            position: relative;
-        }
-
-        .benefit-item::before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #4ECDC4;
-            font-weight: bold;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            margin: 20px;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
-        }
-
-        .modal-close:hover {
-            color: #333;
-        }
+        /* Todo en css/club_global.css — solo overrides mínimos aquí */
+        .points-badge { background: var(--pitaya-secondary); }
+        .modal        { display: none; align-items: center; justify-content: center; }
+        .ingredient-detail-btn:hover { background: var(--pitaya-secondary) !important; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <h1>
-                <div class="logo">
-                    <img src="https://batidospitaya.com/Imagenes/Logo.svg" alt="Batidos Pitaya Logo">
-                </div>
-                Batidos Pitaya
-            </h1>
-            <div class="user-info">
-                <div>Bienvenido, <strong><?php echo htmlspecialchars($nombre . ' ' . $apellido); ?></strong></div>
-                <div>Membresía: <strong><?php echo htmlspecialchars($membresia); ?></strong></div>
-                <a href="logout.php" class="logout-btn">Cerrar Sesión</a>
-            </div>
-        </div>
-    </div>
+    <?php require_once __DIR__ . '/header_club.php'; ?>
 
-    <div class="container">
-        <div class="success-message">
-            ¡Bienvenido al portal! El sistema está funcionando correctamente.
-        </div>
-
+    <div class="container" style="padding-top:30px;">
         <!-- Points Hero -->
         <div class="points-hero">
             <div class="points-label">Puntos Acumulados</div>
@@ -728,7 +387,7 @@ try {
                             <span>📊 <?php echo number_format($ingrediente['cantidad_total'], 1); ?> <?php echo htmlspecialchars($ingrediente['Unidad']); ?></span>
                         </div>
                         <div class="progress-bar" style="width: 100%; height: 8px; background: #eee; border-radius: 4px; margin-top: 8px; overflow: hidden;">
-                            <div class="progress-fill" style="height: 100%; background: var(--pitaya-gradient); border-radius: 4px; transition: width 0.6s ease; width: <?php echo $porcentaje; ?>%;"></div>
+                            <div class="progress-fill" style="height: 100%; background: var(--pitaya-primary); border-radius: 4px; transition: width 0.6s ease; width: <?php echo $porcentaje; ?>%;"></div>
                         </div>
                     </div>
                     <button class="ingredient-detail-btn" onclick="showIngredientInfo('<?php echo htmlspecialchars($ingrediente['ingrediente']); ?>')" style="background: var(--pitaya-primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-left: 15px;">
@@ -741,7 +400,7 @@ try {
         <?php endif; ?>
 
         <!-- Sección de Análisis Nutricional IA -->
-        <div class="section" style="background: linear-gradient(135deg, var(--pitaya-primary), var(--pitaya-secondary)); color: white;">
+        <div class="section" style="background: var(--pitaya-secondary); color: white;">
             <h2 class="section-title" style="color: white;">🤖 Análisis Nutricional con IA</h2>
             <p style="margin-bottom: 20px; opacity: 0.9;">Obtén recomendaciones personalizadas basadas en tus ingredientes favoritos</p>
             
@@ -810,7 +469,6 @@ try {
             const btnText = document.getElementById('health-btn-text');
             const content = document.getElementById('health-analysis-content');
             
-            console.log('Iniciando análisis nutricional con modelos modernos...');
             
             btnText.innerHTML = '⏳ Conectando con IA moderna...';
             button.disabled = true;
@@ -818,7 +476,6 @@ try {
             try {
                 const productosConIngredientes = <?php echo json_encode($productos_con_ingredientes); ?>;
                 
-                console.log('Productos con ingredientes:', productosConIngredientes);
                 
                 if (!productosConIngredientes || productosConIngredientes.length === 0) {
                     content.innerHTML = `
@@ -1135,19 +792,16 @@ try {
 
         // Animación de contadores (simplificada)
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM cargado, inicializando...');
             
             // Agregar event listener al botón de análisis de salud
             const healthBtn = document.getElementById('generate-health-btn');
             if (healthBtn) {
                 healthBtn.addEventListener('click', function() {
-                    console.log('Botón clickeado');
                     generateHealthAnalysis();
                 });
             }
             
             const counters = document.querySelectorAll('.stat-number');
-            console.log('Contadores encontrados:', counters.length);
             
             counters.forEach(counter => {
                 const text = counter.innerText;
@@ -1169,5 +823,9 @@ try {
             });
         });
     </script>
+    <?php require_once __DIR__ . '/footer_club.php'; ?>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
