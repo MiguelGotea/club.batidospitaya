@@ -293,5 +293,4 @@ function formatAIResponse($text)
 
     return $text;
 }
-
 ?>
