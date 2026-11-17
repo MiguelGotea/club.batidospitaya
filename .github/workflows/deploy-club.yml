@@ -10,7 +10,7 @@ jobs:
     
     steps:
     - name: 📥 Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
       with:
         fetch-depth: 0
         
@@ -48,6 +48,10 @@ jobs:
           --exclude='.github/' \
           --exclude='.gitignore' \
           --exclude='.scripts/' \
+          --exclude='core/database/env.php' \
+          --exclude='core/database/env.production.php' \
+          --exclude='config.php' \
+          --exclude='*.sql' \
           -e "ssh -o StrictHostKeyChecking=no -p 65002" \
           ./ \
           ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH_CLUB }}/
