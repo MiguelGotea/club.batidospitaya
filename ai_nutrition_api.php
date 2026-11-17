@@ -11,8 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Verificar sesión
-if (!($_SESSION['logged_in'] ?? false)) {
+// Verificar sesión — acepta key nueva (club_logged_in) y vieja (logged_in)
+$autenticado = ($_SESSION['club_logged_in'] ?? false) || ($_SESSION['logged_in'] ?? false);
+if (!$autenticado) {
     http_response_code(401);
     echo json_encode(['error' => 'Usuario no autenticado']);
     exit();
