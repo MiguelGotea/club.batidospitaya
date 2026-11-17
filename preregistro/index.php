@@ -109,9 +109,6 @@ $yaCompletado = !empty($socio['nombre']) && !empty($socio['apellido']) && !empty
             <h5 class="fw-bold mb-1 text-white">
                 <i class="bi bi-person-badge me-2"></i>Completa tu perfil
             </h5>
-            <p class="text-white-50 small mb-0">
-                Sube la foto de tu cédula y te extraemos los datos automáticamente.
-            </p>
         </div>
 
         <div class="card-body p-4">
@@ -139,7 +136,7 @@ $yaCompletado = !empty($socio['nombre']) && !empty($socio['apellido']) && !empty
                 <!-- Botón analizar -->
                 <button type="button" id="btnAnalizarCedula"
                         class="btn btn-success w-100 mt-3 d-none">
-                    <i class="bi bi-cpu me-2"></i>Analizar con IA
+                    <i class="bi bi-upload me-2"></i>Subir Cédula
                 </button>
 
                 <!-- Spinner / resultado -->
@@ -149,11 +146,7 @@ $yaCompletado = !empty($socio['nombre']) && !empty($socio['apellido']) && !empty
             <!-- PASO 2: Datos extraídos (readonly) ─────────────── -->
             <div id="seccionDatos" class="d-none">
 
-                <p class="text-muted small mb-3">
-                    <i class="bi bi-lock-fill me-1"></i>
-                    Datos extraídos de tu cédula — <strong>solo lectura</strong>.
-                    Solo el correo es editable.
-                </p>
+
 
                 <div class="row g-3 mb-3">
                     <div class="col-6">

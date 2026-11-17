@@ -60,10 +60,16 @@ El número de cédula tiene el formato: NNN-DDMMAA-NNNNL
 
 TAREA:
 Analiza la imagen de cédula de identidad nicaragüense y extrae exactamente:
-1. nombre: Solo el primer nombre (en mayúsculas)
-2. apellido: Solo el primer apellido (en mayúsculas)
-3. cedula: El número completo en formato exacto de la cédula (con guiones si aplica)
-4. fecha_nacimiento: La fecha de nacimiento en formato YYYY-MM-DD (extráela del número de cédula si está visible, o del campo de fecha si aparece impresa)
+1. nombre: Todos los nombres (primer y segundo nombre si existe), en MAYÚSCULAS, separados por espacio. Ejemplo: "DAMARIS JOSÉL"
+2. apellido: Todos los apellidos (primer y segundo apellido si existe), en MAYÚSCULAS, separados por espacio. Ejemplo: "MUÑOZ DONAIRE"
+3. cedula: El número completo en formato exacto de la cédula (con guiones: NNN-DDMMAA-NNNNL)
+4. fecha_nacimiento: La fecha de nacimiento en formato YYYY-MM-DD. Extráela del número de cédula si está visible (dígitos 4-9 = DDMMAA), o del campo de fecha impreso en la cédula.
+
+REGLAS IMPORTANTES:
+- Incluye TODOS los nombres y TODOS los apellidos que aparezcan impresos en la cédula.
+- Si hay segundo nombre, inclúyelo en "nombre". Si hay segundo apellido, inclúyelo en "apellido".
+- Respeta tildes y caracteres especiales (Ñ, É, Á, etc.) si aparecen.
+- Para la fecha: si el año en la cédula es "01" interpreta como 2001, si es "85" como 1985, etc.
 
 RESPONDE ÚNICAMENTE con JSON válido, sin texto adicional, sin markdown:
 {"nombre":"...","apellido":"...","cedula":"...","fecha_nacimiento":"YYYY-MM-DD"}
