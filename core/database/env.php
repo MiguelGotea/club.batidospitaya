@@ -12,3 +12,4 @@ define('DB_HOST', '192.168.0.34');
 define('DB_NAME', 'erp_local');
 define('DB_USER', 'erp_dev');
 define('DB_PASS', 'DevLocal2025!');
+
