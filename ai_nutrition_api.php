@@ -46,18 +46,29 @@ if (empty($productos_con_ingredientes)) {
     exit();
 }
 
+// Proveedores en orden de preferencia — se usa el primero con keys activas
+const AI_PROVEEDORES = ['groq', 'google', 'openai', 'deepseek', 'cerebras', 'openrouter', 'huggingface', 'mistral'];
+
 // --- Análisis ---
 try {
-    $ai     = new AIService($conn, 'groq');
-    $hasAI  = $ai->hasAvailableKeys();
+    $ai       = null;
     $analisis = null;
 
-    if ($hasAI) {
+    foreach (AI_PROVEEDORES as $proveedor) {
+        $candidato = new AIService($conn, $proveedor);
+        if ($candidato->hasAvailableKeys()) {
+            $ai = $candidato;
+            break;
+        }
+    }
+
+    if ($ai) {
         $analisis = analizarConIA($ai, $productos_con_ingredientes);
     }
 
+    $hasAI = ($analisis !== null);
+
     if (!$analisis) {
-        $hasAI    = false;
         $analisis = fallbackEstatico($productos_con_ingredientes);
     }
 
@@ -65,6 +76,7 @@ try {
         'success'              => true,
         'analysis'             => $analisis,
         'hasAI'                => $hasAI,
+        'proveedor'            => $ai ? $ai->getProveedor() : null,
         'productos_analizados' => count($productos_con_ingredientes),
     ]);
 
@@ -75,6 +87,7 @@ try {
         'analysis' => fallbackEstatico($productos_con_ingredientes),
         'hasAI'    => false,
         'fallback' => true,
+        'proveedor' => null,
     ]);
 }
 
