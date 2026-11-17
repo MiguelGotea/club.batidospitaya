@@ -185,6 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión — Club Batidos Pitaya</title>
+    <link rel="icon" type="image/svg+xml" href="core/assets/img/Logo.svg">
 
     <!-- Bootstrap 5 (local) -->
     <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">

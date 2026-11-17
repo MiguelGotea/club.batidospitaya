@@ -103,7 +103,8 @@ function analizarConIA(AIService $ai, array $productos): ?string
     $systemPrompt = 'Eres un nutricionista experto en batidos y alimentos saludables. '
         . 'Proporciona información científica precisa sin listar ingredientes; '
         . 'enfócate en beneficios generales del producto. '
-        . 'Responde en español con el siguiente formato EXACTO (sin asteriscos):'
+        . 'IMPORTANTE: Responde ÚNICAMENTE con texto plano, SIN JSON, SIN llaves {}, SIN corchetes [], SIN comillas de código. '
+        . 'Responde en español con el siguiente formato EXACTO (sin asteriscos ni markdown):'
         . "\n\nBeneficios principales:\n• Punto 1\n• Punto 2\n• Punto 3"
         . "\n\nValor nutricional:\nTexto descriptivo..."
         . "\n\nRecomendaciones:\n• Recomendación 1\n• Recomendación 2"
@@ -137,17 +138,37 @@ function analizarConIA(AIService $ai, array $productos): ?string
 }
 
 /**
- * Convierte markdown básico a HTML limpio para mostrar en el dashboard.
+ * Convierte la respuesta de la IA a HTML limpio para el dashboard.
+ * Detecta automáticamente si la IA devolvió JSON y extrae el texto.
  */
 function formatearRespuesta(string $texto): string
 {
     $texto = trim($texto);
+
+    // Si la IA devolvió JSON (ej. {"analisis_nutricional": "..."}), extraer el texto
+    if (str_starts_with($texto, '{') || str_starts_with($texto, '[')) {
+        $decoded = json_decode($texto, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            // Buscar el primer valor de tipo string en el JSON
+            $texto = '';
+            array_walk_recursive($decoded, function ($val) use (&$texto) {
+                if (is_string($val) && strlen($val) > $texto) {
+                    $texto = $val;
+                }
+            });
+        }
+    }
+
+    // Limpiar bloques de código markdown ```...```
+    $texto = preg_replace('/```[\s\S]*?```/', '', $texto);
     // **negrita** → <strong>
     $texto = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $texto);
-    // listas con - o * o números → bullets
+    // listas con - o * → bullets
     $texto = preg_replace('/^[\-\*]\s+/m', '• ', $texto);
+    // listas numeradas → bullets
     $texto = preg_replace('/^\d+\.\s+/m', '• ', $texto);
-    return nl2br($texto);
+
+    return nl2br(trim($texto));
 }
 
 /**

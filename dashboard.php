@@ -209,6 +209,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Portal — Club Batidos Pitaya</title>
+    <link rel="icon" type="image/svg+xml" href="core/assets/img/Logo.svg">
 
     <!-- Bootstrap 5 (local) -->
     <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
