@@ -86,7 +86,7 @@ $extraParts = [
 
 // Proveedores con soporte Vision, en orden de preferencia
 $proveedores = [
-    'google' => 'gemini-2.0-flash',
+    'google' => 'gemini-3.8-flash',
     'openai' => 'gpt-4o-mini',
     'groq'   => 'llama-3.2-90b-vision-preview',
 ];
@@ -109,8 +109,8 @@ foreach ($proveedores as $prov => $modelo) {
 }
 
 if (!$respuesta) {
-    // DEBUG TEMPORAL — mostrar error real para diagnóstico
-    echo json_encode(['success' => false, 'mensaje' => 'Error al analizar la imagen. Intenta nuevamente.', '_debug' => $errores]);
+    error_log('analizar_cedula — todos los proveedores fallaron: ' . implode(' | ', $errores));
+    echo json_encode(['success' => false, 'mensaje' => 'Error al analizar la imagen. Intenta nuevamente.']);
     exit;
 }
 
